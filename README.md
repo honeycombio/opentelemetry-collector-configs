@@ -16,3 +16,7 @@ Run `make`. You'll need these prerequisites available in your `$PATH`:
 
 * [jq](https://stedolan.github.io/jq/download/)
 * [yq](https://kislyuk.github.io/yq/#installation)
+
+## Development
+
+Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
