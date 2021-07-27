@@ -14,6 +14,7 @@ Creates a configuration file for OpenTelemetry Collector that:
 
 Run `make`. You'll need these prerequisites available in your `$PATH`:
 
+* [go](https://golang.org/dl/)
 * [jq](https://stedolan.github.io/jq/download/)
 * [yq](https://kislyuk.github.io/yq/#installation)
 
