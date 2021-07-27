@@ -40,11 +40,11 @@
 # Save metrics list, as an array, to $metrics:
 .metrics |
 [
-	to_entries[] |
+  to_entries[] |
   # for each metric, extract label details from $labels.
   # separate labels into enum_labels (which we want to rename)
   # and non_enum_labels (which we want to aggregate away)
-	{
+  {
     "name": .key,
     "enum_labels": [
       .value.labels[]? |
@@ -163,7 +163,7 @@ flatten(2) |
       }
     }
   },
-	"processors": {
+  "processors": {
     "metricstransform": {
       "transforms": (
         $aggregate_labels_transforms +
