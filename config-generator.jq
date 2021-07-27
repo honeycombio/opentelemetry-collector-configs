@@ -81,10 +81,9 @@
   }
 ] as $aggregate_labels_transforms |
 
-# here is a function that, given a single metric, will construct a config
-# block that will extract all of the enum labels out of the metric and
-# create a new metric for each timeseries described by that label.
-def build_rename_config_from_metric: (
+# here is a function that, given a single metric, will determine the renames
+# that need to occur so that all the enum labels get extracted:
+def build_rename_rule_from_metric: (
   .name as $old_name |
   .enum_labels[0] as $current |
   .enum_labels[1:] as $rest |
@@ -93,17 +92,11 @@ def build_rename_config_from_metric: (
     "\($old_name).\(.)" as $new_name |
     [
       {
-        "include": $old_name,
-        "experimental_match_labels": { ($current.value): . },
-        "action": "insert",
+        "old_name": $old_name,
         "new_name": $new_name,
-        "operations": [
-          {
-            "action": "aggregate_labels",
-            "aggregation_type": "sum",
-            "label_set": [$rest[] | .value]
-          }
-        ]
+        "label_key": $current.value,
+        "label_value": .,
+        "aggregate_to": [$rest[] | .value]
       }
     ] +
     # if there is more than one enum label on this metric, then recursively
@@ -112,7 +105,7 @@ def build_rename_config_from_metric: (
     if (($rest | length) > 0) 
     then (
       { "name": $new_name, "enum_labels": $rest } |
-      build_rename_config_from_metric
+      build_rename_rule_from_metric
     )
     # base case:
     else []
@@ -121,17 +114,39 @@ def build_rename_config_from_metric: (
   ]
 );
 
-# put together the config section that's responsible for extracting
+# build a list of metric renames
 # unique timeseries out of the enum labels for each metric, and save
-# that to $rename_labels_transforms:
+# that to $metric_rename_rules:
 [
   $metrics[] |
   # only transform metrics that have enum labels
   select(.enum_labels | length > 0) |
-  build_rename_config_from_metric
+  build_rename_rule_from_metric
 ] |
 flatten(2) |
-. as $rename_labels_transforms |
+. as $metric_rename_rules |
+
+# here are the metricstransform transforms for renaming:
+[
+  $metric_rename_rules[] |
+  {
+    "include": .old_name,
+    "experimental_match_labels": { (.label_key): .label_value },
+    "action": "insert",
+    "new_name": .new_name,
+    "operations": [
+      {
+        "action": "aggregate_labels",
+        "aggregation_type": "sum",
+        "label_set": .aggregate_to
+      }
+    ]
+  }
+] as $metric_rename_transforms |
+
+# we also need to build a filter rule to remove the metrics whose names
+# we changed:
+[ $metric_rename_rules[] | .old_name ] | unique as $metrics_to_exclude |
 
 # build & output the final configuration:
 {
@@ -167,25 +182,14 @@ flatten(2) |
     "metricstransform": {
       "transforms": (
         $aggregate_labels_transforms +
-        $rename_labels_transforms
+        $metric_rename_transforms
       )
     },
     "filter": {
       "metrics": {
         "exclude": {
           "match_type": "strict",
-          "metric_names": (
-            [
-              $metrics[] |
-              select(.enum_labels | length > 0) |
-              .name
-            ] +
-            [
-              $metrics[] |
-              select(.enum_labels | length > 1) |
-              "\(.name).\(.enum_labels[0].enum[])" # TODO: this only works at depth 2, which is fine for now
-            ]
-          )
+          "metric_names": $metrics_to_exclude
         }
       }
     },
