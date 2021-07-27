@@ -137,19 +137,19 @@ flatten(2) |
 {
   "exporters": {
     "otlp": {
-      "endpoint": $ENV.OTLP_ENDPOINT | "api.honeycomb.io:443",
+      "endpoint": ($ENV.OTLP_ENDPOINT // "api.honeycomb.io:443"),
       "headers": {
         "x-honeycomb-team": "$HNY_API_KEY",
         "x-honeycomb-dataset": "$HNY_DATASET",
       }
     },
     "logging": {
-      "logLevel": $ENV.LOG_LEVEL | "info" # info is default
+      "logLevel": ($ENV.LOG_LEVEL // "info")
     }
   },
   "receivers": {
     "hostmetrics": {
-      "collection_interval": $ENV.COLLECTION_INTERVAL | "1m",
+      "collection_interval": ($ENV.COLLECTION_INTERVAL // "1m"),
       "scrapers": {
         "memory": {},
         "cpu": {},
