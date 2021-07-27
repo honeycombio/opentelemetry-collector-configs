@@ -2,6 +2,7 @@ all: config collector
 config: compact-config.yaml
 collector: build/otelcol-hny
 
+# generate a configuration file for otel-collector that results in a favorable repackaging ratio
 compact-config.yaml: config-generator.jq vendor/hostmetrics-receiver-metadata.yaml
 	yq -y -f ./config-generator.jq < ./vendor/hostmetrics-receiver-metadata.yaml > ./compact-config.yaml
 
