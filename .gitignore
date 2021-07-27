@@ -1,3 +1,4 @@
 /build/*
+/test/tmp-*
 compact-config.yaml
 sparse-config.yaml

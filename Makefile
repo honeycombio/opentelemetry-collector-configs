@@ -2,6 +2,9 @@ all: config collector
 config: compact-config.yaml
 collector: build/otelcol-hny
 
+test: test/test.sh collector 
+	./test/test.sh
+
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 compact-config.yaml: config-generator.jq vendor/hostmetrics-receiver-metadata.yaml
 	yq -y -f ./config-generator.jq < ./vendor/hostmetrics-receiver-metadata.yaml > ./compact-config.yaml
@@ -15,6 +18,6 @@ build/otelcol-hny: builder-config.yaml
 	opentelemetry-collector-builder --output-path=build --name=hny-otel --config=builder-config.yaml
 
 clean:
-	rm vendor/* build/* compact-config.yaml
+	rm vendor/* build/* compact-config.yaml test/tmp-*
 
-.PHONY: all config collector clean
+.PHONY: all config collector clean test
