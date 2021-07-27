@@ -137,6 +137,7 @@ flatten(2) |
 {
   "exporters": {
     "otlp": {
+      # $ENV pulls from the environment when the generator is running; // provides a "default" value:
       "endpoint": ($ENV.OTLP_ENDPOINT // "api.honeycomb.io:443"),
       "headers": {
         "x-honeycomb-team": "$HNY_API_KEY",
