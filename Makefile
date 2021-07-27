@@ -2,7 +2,7 @@ all: config collector
 config: compact-config.yaml
 collector: build/otelcol-hny
 
-test: test/test.sh collector 
+test: test/test.sh collector config
 	./test/test.sh
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio

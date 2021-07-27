@@ -21,3 +21,5 @@ Run `make`. You'll need these prerequisites available in your `$PATH`:
 ## Development
 
 Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
+
+Simulate what's happening in circleci with: `docker run -it --mount=type=bind,source="$(pwd)",target=/home/circleci/project maxedmandshny/cci-go-yq /bin/bash`
