@@ -2,7 +2,7 @@ all: config collector
 config: artifacts/honeycomb-metrics-config.yaml
 collector: build/otelcol-hny
 
-test: test/test.sh collector config
+test: test/test.sh build/otelcol-hny artifacts/honeycomb-metrics-config.yaml
 	./test/test.sh
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
@@ -16,6 +16,7 @@ vendor/hostmetrics-receiver-metadata.yaml:
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor/hostmetrics-receiver-metadata.yaml
 
 build/otelcol-hny: builder-config.yaml
+	ls -al builder-config.yaml build/otelcol-hny
 	opentelemetry-collector-builder --output-path=build --name=hny-otel --config=builder-config.yaml
 
 clean:
