@@ -1,13 +1,14 @@
 all: config collector
-config: compact-config.yaml
+config: artifacts/honeycomb-metrics-config.yaml
 collector: build/otelcol-hny
 
 test: test/test.sh collector config
 	./test/test.sh
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
-compact-config.yaml: config-generator.jq vendor/hostmetrics-receiver-metadata.yaml
-	yq -y -f ./config-generator.jq < ./vendor/hostmetrics-receiver-metadata.yaml > ./compact-config.yaml
+artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor/hostmetrics-receiver-metadata.yaml
+	mkdir -p ./artifacts
+	yq -y -f ./config-generator.jq < ./vendor/hostmetrics-receiver-metadata.yaml > ./artifacts/honeycomb-metrics-config.yaml
 
 # copy hostmetrics metadata yaml file from the OpenTelemetry Collector repository, and prepend a note saying it's vendored
 vendor/hostmetrics-receiver-metadata.yaml:

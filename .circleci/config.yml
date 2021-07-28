@@ -16,6 +16,4 @@ jobs:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
       - store_artifacts:
-          path: /home/circleci/project/compact-config.yaml
-      - store_artifacts:
-          path: /home/circleci/project/test/tmp-test-output.json
+          path: /home/circleci/project/artifacts

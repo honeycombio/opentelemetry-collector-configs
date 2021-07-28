@@ -2,12 +2,11 @@
 
 set -e
 
-output_file="./test/tmp-test-output.json"
-orig_config_file="./compact-config.yaml"
-test_config_file="./test/tmp-test-config.yaml"
+output_file=$(mktemp ./artifacts/test-output-XXXXXX.json)
+orig_config_file="./artifacts/honeycomb-metrics-config.yaml"
+test_config_file=$(mktemp /tmp/test-config-XXXXXX.yaml)
 
 # make some modifications to config to make it testable
-rm -f $test_config_file
 yq -y '. * {
   exporters: {
     file: {path: "'$output_file'"}
@@ -24,8 +23,8 @@ yq -y '. * {
   }
 }' < $orig_config_file > $test_config_file
 
-rm -f $output_file
 touch $output_file
+echo "writing JSON OTLP to $output_file."
 
 # run otelcol in the background until we have some data to look at
 echo -n "running otelcol until we have data..."
