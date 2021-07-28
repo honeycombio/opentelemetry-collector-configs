@@ -14,11 +14,8 @@ vendor/hostmetrics-receiver-metadata.yaml:
 	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/main/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor/hostmetrics-receiver-metadata.yaml
 
-build/otelcol-hny: opentelemetry-collector-builder builder-config.yaml
+build/otelcol-hny: builder-config.yaml
 	opentelemetry-collector-builder --output-path=build --name=hny-otel --config=builder-config.yaml
-
-opentelemetry-collector-builder:
-	go get github.com/open-telemetry/opentelemetry-collector-builder
 
 clean:
 	rm vendor/* build/* compact-config.yaml test/tmp-*

@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: maxedmandshny/cci-go-yq:0.0.1
+      - image: maxedmandshny/cci-go-yq:0.0.2
     steps:
       - checkout
       - restore_cache:
