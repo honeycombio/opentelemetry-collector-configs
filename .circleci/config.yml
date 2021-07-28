@@ -6,6 +6,16 @@ jobs:
       - image: maxedmandshny/cci-go-yq:0.0.1
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - builder-config-{{ checksum "builder-config.yaml" }}
       - run:
           name: Run tests
           command: make test
+      - save_cache:
+          key: builder-config-{{ checksum "builder-config.yaml" }}
+          paths: build
+      - store_artifacts:
+          path: /home/circleci/project/compact-config.yaml
+      - store_artifacts:
+          path: /home/circleci/project/test/tmp-test-output.json
