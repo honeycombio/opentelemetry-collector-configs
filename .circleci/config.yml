@@ -16,4 +16,4 @@ jobs:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
       - store_artifacts:
-          path: /home/circleci/project/artifacts
+          path: /home/circleci/project/artifacts/
