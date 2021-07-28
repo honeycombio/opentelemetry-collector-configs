@@ -1,0 +1,19 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: maxedmandshny/cci-go-yq:0.0.2
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - builder-config-{{ checksum "builder-config.yaml" }}
+      - run:
+          name: Run tests
+          command: make test
+      - save_cache:
+          key: builder-config-{{ checksum "builder-config.yaml" }}
+          paths: build
+      - store_artifacts:
+          path: /home/circleci/project/artifacts/
