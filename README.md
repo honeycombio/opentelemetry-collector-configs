@@ -7,8 +7,8 @@
 Creates a configuration file for OpenTelemetry Collector that:
 
 - Sends OTLP metrics to Honeycomb
-- Enables the hostmetrics receiver
-- Transforms metrics from the hostmetrics receiver such that they generate optimally-wide Honeycomb records
+- Enables the [hostmetrics receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/hostmetricsreceiver)
+- Transforms metrics from the hostmetrics receiver such that they generate optimally-wide Honeycomb records ([see more about the event transformation here](./docs/metrics-transformation.md))
 
 ## Building
 
