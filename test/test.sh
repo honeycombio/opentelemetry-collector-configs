@@ -47,14 +47,18 @@ wait $otelcol_pid
 echo "success!"
 
 # assert that metric names are correct
-echo -n "assert that we generated metrics with expected names..."
-cat $output_file |
-head -1 |
-jq -r '
+echo "checking that we only generated metrics with allowed names..."
+allowed_names=$(<./test/allowed_metric_names.txt)
+for metric_name in $(jq -r '
   .resourceMetrics[] |
   .instrumentationLibraryMetrics[] |
   .metrics[] |
-  .name' |
-sort |
-diff - ./test/expected_metric_names.txt
+  .name')
+do
+  if [[ ${allowed_names} != *"$metric_name"* ]]; then
+    echo "found disallowed metric $metric_name"
+    exit 1
+  fi
+done < $output_file
+
 echo "success!"
