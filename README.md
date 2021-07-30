@@ -1,7 +1,3 @@
-# OpenTelemetry Collector Distro
-
-[We have plans](https://app.asana.com/0/1199917178609623/1200638496207367/f) to create a set of pre-compiled binaries & an installer that gets everything working quickly and easily. In the meanwhile, this repository contains code to generate an OpenTelemetry Collector configuration.
-
 ## OpenTelemetry Collector Configuration Generator
 
 Creates a configuration file for OpenTelemetry Collector that:
