@@ -1,29 +1,13 @@
-// Copyright The OpenTelemetry Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//       http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package filterprocessor
+package timestampprocessor
 
 import (
 	"context"
-	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/honeycombio/opentelemetry-collector-distro/internal/filtermetric"
-	"github.com/honeycombio/opentelemetry-collector-distro/internal/goldendataset"
 	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer/consumertest"
@@ -32,6 +16,7 @@ import (
 
 type metricTimestampTest struct {
 	name               string
+	roundToNearest     time.Duration
 	inMetrics          pdata.Metrics
 	expectedDataPoints []testDataPoint
 }
@@ -44,7 +29,8 @@ type testDataPoint struct {
 var (
 	standardTests = []metricTimestampTest{
 		{
-			name: "timestamps end up rounded to nearest second",
+			name:           "timestamps end up rounded to nearest second",
+			roundToNearest: time.Second,
 			inMetrics: testResourceMetrics([]testDataPoint{
 				{1626298669697344000, "a"},
 				{1626298669697390000, "b"},
@@ -68,7 +54,7 @@ func TestTimestampProcessor(t *testing.T) {
 			next := new(consumertest.MetricsSink)
 			cfg := &Config{
 				ProcessorSettings: config.NewProcessorSettings(config.NewID(typeStr)),
-				Metrics:           MetricFilters{},
+				RoundToNearest:    test.roundToNearest,
 			}
 			factory := NewFactory()
 			fmp, err := factory.CreateMetricsProcessor(
@@ -183,78 +169,6 @@ func getDatapointListFromMetrics(metricsList []pdata.Metrics) (dataPointsToRetur
 	return
 }
 
-func BenchmarkStrictFilter(b *testing.B) {
-	mp := &filtermetric.MatchProperties{
-		MatchType:   "strict",
-		MetricNames: []string{"p10_metric_0"},
-	}
-	benchmarkFilter(b, mp)
-}
-
-func BenchmarkRegexpFilter(b *testing.B) {
-	mp := &filtermetric.MatchProperties{
-		MatchType:   "regexp",
-		MetricNames: []string{"p10_metric_0"},
-	}
-	benchmarkFilter(b, mp)
-}
-
-func BenchmarkExprFilter(b *testing.B) {
-	mp := &filtermetric.MatchProperties{
-		MatchType:   "expr",
-		Expressions: []string{`MetricName == "p10_metric_0"`},
-	}
-	benchmarkFilter(b, mp)
-}
-
-func benchmarkFilter(b *testing.B, mp *filtermetric.MatchProperties) {
-	factory := NewFactory()
-	cfg := factory.CreateDefaultConfig()
-	pcfg := cfg.(*Config)
-	pcfg.Metrics = MetricFilters{
-		Exclude: mp,
-	}
-	ctx := context.Background()
-	proc, _ := factory.CreateMetricsProcessor(
-		ctx,
-		componenttest.NewNopProcessorCreateSettings(),
-		cfg,
-		consumertest.NewNop(),
-	)
-	pdms := metricSlice(128)
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		for _, pdm := range pdms {
-			_ = proc.ConsumeMetrics(ctx, pdm)
-		}
-	}
-}
-
-func metricSlice(numMetrics int) []pdata.Metrics {
-	var out []pdata.Metrics
-	for i := 0; i < numMetrics; i++ {
-		const size = 2
-		out = append(out, pdm(fmt.Sprintf("p%d_", i), size))
-	}
-	return out
-}
-
-func pdm(prefix string, size int) pdata.Metrics {
-	c := goldendataset.MetricsCfg{
-		MetricDescriptorType: pdata.MetricDataTypeGauge,
-		MetricValueType:      pdata.MetricValueTypeInt,
-		MetricNamePrefix:     prefix,
-		NumILMPerResource:    size,
-		NumMetricsPerILM:     size,
-		NumPtLabels:          size,
-		NumPtsPerMetric:      size,
-		NumResourceAttrs:     size,
-		NumResourceMetrics:   size,
-	}
-	return goldendataset.MetricsFromCfg(c)
-}
-
 func TestNilResourceMetrics(t *testing.T) {
 	metrics := pdata.NewMetrics()
 	rms := metrics.ResourceMetrics()
@@ -286,12 +200,7 @@ func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
 	pcfg := cfg.(*Config)
-	pcfg.Metrics = MetricFilters{
-		Exclude: &filtermetric.MatchProperties{
-			MatchType:   "strict",
-			MetricNames: []string{"foo"},
-		},
-	}
+	pcfg.RoundToNearest = time.Second
 	ctx := context.Background()
 	proc, _ := factory.CreateMetricsProcessor(
 		ctx,

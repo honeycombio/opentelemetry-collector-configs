@@ -2,7 +2,8 @@ receivers:
   nop:
 
 processors:
-  timestamp: # no round_to_nearest
+  timestamp/1sec:
+    round_to_nearest: 1s
 
 exporters:
   nop:
@@ -11,5 +12,5 @@ service:
   pipelines:
     metrics:
       receivers: [nop]
-      processors: [timestamp]
+      processors: [timestamp/1sec]
       exporters: [nop]
