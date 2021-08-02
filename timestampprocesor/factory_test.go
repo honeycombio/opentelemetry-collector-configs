@@ -19,7 +19,7 @@ func TestType(t *testing.T) {
 	factory := NewFactory()
 	pType := factory.Type()
 
-	assert.Equal(t, pType, config.Type("filter"))
+	assert.Equal(t, pType, config.Type("timestamp"))
 }
 
 func TestCreateDefaultConfig(t *testing.T) {
