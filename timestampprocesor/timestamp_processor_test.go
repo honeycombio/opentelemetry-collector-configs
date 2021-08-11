@@ -38,10 +38,11 @@ var (
 				{1626298669697627000, "d"},
 			}),
 			expectedDataPoints: []testDataPoint{
-				{1626298670000000000, "a"},
-				{1626298670000000000, "b"},
-				{1626298670000000000, "c"},
-				{1626298670000000000, "d"},
+				// 1626298670000000000 - max's value
+				{1626298669000000000, "a"},
+				{1626298669000000000, "b"},
+				{1626298669000000000, "c"},
+				{1626298669000000000, "d"},
 			},
 		},
 	}
@@ -211,4 +212,8 @@ func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
 	require.NotPanics(t, func() {
 		_ = proc.ConsumeMetrics(ctx, metrics)
 	})
+}
+
+func testMinTimestamp(t *testing.T) {
+
 }
