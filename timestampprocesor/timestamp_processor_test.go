@@ -45,6 +45,25 @@ var (
 				{1626298669000000000, "d"},
 			},
 		},
+		{
+			name:           "timestamps more than 1 second apart end up rounded to nearest second",
+			roundToNearest: time.Second,
+			inMetrics: testResourceMetrics([]testDataPoint{
+
+				{1626298670000000000, "a"},
+				{1626298672300000000, "b"},
+				{1626298673100000000, "c"},
+				{1626298672600000000, "d"},
+				{1626298673900000000, "e"},
+			}),
+			expectedDataPoints: []testDataPoint{
+				{1626298670000000000, "a"},
+				{1626298672000000000, "b"},
+				{1626298673000000000, "c"},
+				{1626298672000000000, "d"},
+				{1626298673000000000, "e"},
+			},
+		},
 	}
 )
 
