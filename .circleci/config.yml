@@ -14,10 +14,12 @@ jobs:
           command: make test
       - run:
           name: Create artifacts
-          command: |
+          command: >
             make;
+            mkdir -p /tmp/images &&
+            cp build/otelcol-hny /tmp/images
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
       - store_artifacts:
-          path: ./build/otelcol-hny
+          path: /tmp/images
