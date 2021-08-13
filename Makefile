@@ -16,7 +16,7 @@ vendor-fixtures/hostmetrics-receiver-metadata.yaml:
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
 build/otelcol-hny: builder-config.yaml
-	ls -al builder-config.yaml build/otelcol-hny
+	ls -al builder-config.yaml 
 	opentelemetry-collector-builder --output-path=build --name=hny-otel --config=builder-config.yaml
 
 clean:
