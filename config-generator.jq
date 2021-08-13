@@ -180,7 +180,7 @@ flatten(2) |
   },
   "processors": {
     "timestamp": {
-      "round_to_nearest": "1s"
+      "round_to_nearest": "1m"
     },
     "metricstransform": {
       "transforms": (
