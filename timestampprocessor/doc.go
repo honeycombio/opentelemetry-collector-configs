@@ -1,3 +1,3 @@
-// package timestampprocessor implements a processor for filtering
-// (dropping) metrics and/or spans by various properties.
+// package timestampprocessor implements a processor for snapping
+// timestamps to the nearest <duration>.
 package timestampprocessor
