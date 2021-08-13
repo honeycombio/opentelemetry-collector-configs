@@ -148,20 +148,8 @@ func UnwrapMetricsList(wrappedMetricsList []pdata.Metrics) (metricObjects []pdat
 func getDatapointListFromMetrics(metricsList []pdata.Metrics) (dataPointsToReturn []testDataPoint) {
 	for _, metric := range UnwrapMetricsList(metricsList) {
 		switch metric.DataType() {
-		case pdata.MetricDataTypeIntGauge:
-			dataPoints := metric.IntGauge().DataPoints()
-			for l := 0; l < dataPoints.Len(); l++ {
-				gotDataPoint := dataPoints.At(l)
-				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})
-			}
 		case pdata.MetricDataTypeGauge:
 			dataPoints := metric.Gauge().DataPoints()
-			for l := 0; l < dataPoints.Len(); l++ {
-				gotDataPoint := dataPoints.At(l)
-				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})
-			}
-		case pdata.MetricDataTypeIntSum:
-			dataPoints := metric.IntSum().DataPoints()
 			for l := 0; l < dataPoints.Len(); l++ {
 				gotDataPoint := dataPoints.At(l)
 				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})

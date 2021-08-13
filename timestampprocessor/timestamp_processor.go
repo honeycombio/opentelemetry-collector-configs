@@ -29,23 +29,10 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 			ms := rm.InstrumentationLibraryMetrics().At(j)
 			for k := 0; k < ms.Metrics().Len(); k++ {
 				m := ms.Metrics().At(k)
+				
 				switch m.DataType() {
-				case pdata.MetricDataTypeIntGauge:
-					dataPoints := m.IntGauge().DataPoints()
-					for l := 0; l < dataPoints.Len(); l++ {
-						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
-					}
 				case pdata.MetricDataTypeGauge:
 					dataPoints := m.Gauge().DataPoints()
-					for l := 0; l < dataPoints.Len(); l++ {
-						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
-					}
-				case pdata.MetricDataTypeIntSum:
-					dataPoints := m.IntSum().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
 						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
