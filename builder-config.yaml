@@ -10,4 +10,3 @@ dist:
 processors:
   - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.30.0"
   - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v0.0.0"
-    path: /Users/molly/go/src/github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor
