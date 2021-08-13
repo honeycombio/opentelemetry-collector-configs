@@ -29,7 +29,7 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 			ms := rm.InstrumentationLibraryMetrics().At(j)
 			for k := 0; k < ms.Metrics().Len(); k++ {
 				m := ms.Metrics().At(k)
-				
+
 				switch m.DataType() {
 				case pdata.MetricDataTypeGauge:
 					dataPoints := m.Gauge().DataPoints()
@@ -67,29 +67,4 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 		}
 	}
 	return src, nil
-}
-
-// get the minimum timestamp from the set snapped to the nearest second
-func minRoundedTimestamp(timestamps []pdata.Timestamp, roundToNearest time.Duration) pdata.Timestamp {
-	var minTs pdata.Timestamp
-	var minNanoSeconds int64
-
-	if len(timestamps) > 0 {
-		minTs = timestamps[0]
-		minNanoSeconds = minTs.AsTime().UnixNano()
-	}
-
-	for i := 1; i < len(timestamps); i++ {
-		if timestamps[i].AsTime().UnixNano() < minNanoSeconds {
-			minTs = timestamps[i]
-			minNanoSeconds = minTs.AsTime().UnixNano()
-		}
-	}
-
-	// round minTs to the nearest second
-	// duration := minTs.AsTime().Sub(Time()) * time.Duration // time.Time
-	fmt.Printf("mintime: %d\n", minTs.AsTime().UnixNano())
-	roundTime := minTs.AsTime().Round(1 * roundToNearest)
-	fmt.Printf("rounded mintime: %d\n", roundTime.UnixNano())
-	return pdata.TimestampFromTime(roundTime)
 }
