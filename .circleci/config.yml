@@ -16,6 +16,7 @@ jobs:
           name: Create artifacts
           command: |
             export GOOS=darwin;
+            rm build/otelcol-hny;
             make;
             mkdir -p /tmp/images;
             cp build/otelcol-hny /tmp/images;
