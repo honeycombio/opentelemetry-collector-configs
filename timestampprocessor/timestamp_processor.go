@@ -20,7 +20,8 @@ func newTimestampMetricProcessor(logger *zap.Logger, cfg *Config) (*filterMetric
 	return &filterMetricProcessor{cfg: cfg, logger: logger}, nil
 }
 
-// timestamp snapping comment
+// processMetrics takes incoming metrics and adjusts their timestamps to
+// the nearest time unit (specified by duration in the config)
 func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Metrics) (pdata.Metrics, error) {
 	// set the timestamps to the nearest second
 	for i := 0; i < src.ResourceMetrics().Len(); i++ {
@@ -49,7 +50,7 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 					dataPoints := m.Histogram().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
+						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(fmp.cfg.RoundToNearest)
 						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeSummary:
