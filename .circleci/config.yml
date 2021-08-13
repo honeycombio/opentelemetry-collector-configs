@@ -14,7 +14,7 @@ jobs:
           command: make test
       - run:
           name: Copy Artifacts
-          command: cp ./build/otelcol-hny /home/circleci/project/artifacts
+          command: cp ./build/otelcol-hny /home/circleci/project/artifacts/otelcol-hny
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
