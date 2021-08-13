@@ -14,10 +14,11 @@ jobs:
           command: make test
       - run:
           name: Create artifacts
-          command: >
+          command: |
+            export GOOS=darwin;
             make;
-            mkdir -p /tmp/images &&
-            cp build/otelcol-hny /tmp/images
+            mkdir -p /tmp/images;
+            cp build/otelcol-hny /tmp/images;
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
