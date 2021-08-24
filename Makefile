@@ -2,8 +2,13 @@ all: config collector
 config: artifacts/honeycomb-metrics-config.yaml
 collector: build/otelcol-hny
 
-test: test/test.sh build/otelcol-hny artifacts/honeycomb-metrics-config.yaml
+test: go_test integration_test
+
+integration_test: test/test.sh build/otelcol-hny artifacts/honeycomb-metrics-config.yaml
 	./test/test.sh
+
+go_test:
+	go test ./timestampprocessor
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
@@ -22,4 +27,4 @@ build/otelcol-hny: builder-config.yaml
 clean:
 	rm vendor-fixtures/* build/* compact-config.yaml test/tmp-*
 
-.PHONY: all config collector clean test
+.PHONY: all config collector clean test integration_test go_test

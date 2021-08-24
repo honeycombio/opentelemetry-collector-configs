@@ -2,6 +2,7 @@ package timestampprocessor
 
 import (
 	"context"
+	"fmt"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
@@ -36,6 +37,10 @@ func createMetricsProcessor(
 	cfg config.Processor,
 	nextConsumer consumer.Metrics,
 ) (component.MetricsProcessor, error) {
+	oCfg := cfg.(*Config)
+	if oCfg.RoundToNearest == nil {
+		return nil, fmt.Errorf("error creating \"timestamp\" processor due to missing required field \"round_to_nearest\" of processor %v", cfg.ID())
+	}
 	timestampProcessor, err := newTimestampMetricProcessor(set.Logger, cfg.(*Config))
 	if err != nil {
 		return nil, err

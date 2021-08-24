@@ -10,7 +10,7 @@ import (
 type Config struct {
 	config.ProcessorSettings `mapstructure:",squash"` // squash ensures fields are correctly decoded in embedded struct
 
-	RoundToNearest time.Duration `mapstructure:"round_to_nearest"`
+	RoundToNearest *time.Duration `mapstructure:"round_to_nearest"`
 }
 
 var _ config.Processor = (*Config)(nil)

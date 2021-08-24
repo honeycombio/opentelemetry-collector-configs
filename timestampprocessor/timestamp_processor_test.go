@@ -74,7 +74,7 @@ func TestTimestampProcessor(t *testing.T) {
 			next := new(consumertest.MetricsSink)
 			cfg := &Config{
 				ProcessorSettings: config.NewProcessorSettings(config.NewID(typeStr)),
-				RoundToNearest:    test.roundToNearest,
+				RoundToNearest:    &test.roundToNearest,
 			}
 			factory := NewFactory()
 			fmp, err := factory.CreateMetricsProcessor(
@@ -208,7 +208,8 @@ func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
 	pcfg := cfg.(*Config)
-	pcfg.RoundToNearest = time.Second
+	oneSecond := time.Second
+	pcfg.RoundToNearest = &oneSecond
 	ctx := context.Background()
 	proc, _ := factory.CreateMetricsProcessor(
 		ctx,
@@ -219,8 +220,4 @@ func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
 	require.NotPanics(t, func() {
 		_ = proc.ConsumeMetrics(ctx, metrics)
 	})
-}
-
-func testMinTimestamp(t *testing.T) {
-
 }

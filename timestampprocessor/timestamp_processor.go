@@ -50,7 +50,7 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 					dataPoints := m.Histogram().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(fmp.cfg.RoundToNearest)
+						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
 						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeSummary:

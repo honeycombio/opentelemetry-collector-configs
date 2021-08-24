@@ -25,6 +25,8 @@ func TestLoadingConfigStrict(t *testing.T) {
 	assert.Nil(t, err)
 	require.NotNil(t, cfg)
 
+	oneSecond := time.Second
+
 	tests := []struct {
 		filterID config.ComponentID
 		expCfg   *Config
@@ -33,7 +35,7 @@ func TestLoadingConfigStrict(t *testing.T) {
 			filterID: config.NewIDWithName("timestamp", "1sec"),
 			expCfg: &Config{
 				ProcessorSettings: config.NewProcessorSettings(config.NewIDWithName(typeStr, "1sec")),
-				RoundToNearest:    time.Second,
+				RoundToNearest:    &oneSecond,
 			},
 		},
 	}

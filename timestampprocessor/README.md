@@ -1,4 +1,4 @@
-# Filter Processor
+# Timestamp Processor for OpenTelemetry Collector
 
 Supported pipeline types: metrics
 
