@@ -8,7 +8,7 @@ integration_test: test/test.sh build/otelcol-hny artifacts/honeycomb-metrics-con
 	./test/test.sh
 
 go_test:
-	go test ./timestampprocessor
+	(cd ./timestampprocessor && go test .)
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
