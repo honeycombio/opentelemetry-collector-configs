@@ -15,7 +15,7 @@ collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 bui
 collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
 
 .PHONY: release
-release: collector-bin collector-dist
+release: clean collector-bin collector-dist
 	cp build/otelcol_hny_* dist
 	shasum -a 256 dist/* > dist/checksums.txt
 
@@ -79,6 +79,6 @@ build-package-internal:
 
 .PHONY: clean
 clean:
-	rm -f vendor-fixtures/* build/* compact-config.yaml test/tmp-* dist/*
+	rm -f build/* compact-config.yaml test/tmp-* dist/*
 
 .PHONY: all config collector test integration_test go_test
