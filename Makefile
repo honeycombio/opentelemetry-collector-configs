@@ -3,7 +3,7 @@ GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
 
 .PHONY: all
-all: config collector-bin
+all: config collector-bin collector-dist
 
 .PHONY: config
 config: artifacts/honeycomb-metrics-config.yaml
@@ -12,7 +12,12 @@ config: artifacts/honeycomb-metrics-config.yaml
 collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 build/otelcol_hny_windows_amd64.exe
 
 .PHONY: collector-dist
-collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_amd64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
+collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
+
+.PHONY: release
+release: collector-bin collector-dist
+	cp build/otelcol_hny_* dist
+	shasum -a 256 dist/* > dist/checksums.txt
 
 .PHONY: test
 test: go_test integration_test
