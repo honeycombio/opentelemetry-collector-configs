@@ -9,3 +9,5 @@ dist:
   go: "/usr/bin/go" # which Go binary to use to compile the generated sources. Optional.
 processors:
   - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.30.0"
+  - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v0.0.0"
+    path: ./timestampprocessor

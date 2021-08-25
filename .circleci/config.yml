@@ -12,8 +12,13 @@ jobs:
       - run:
           name: Run tests
           command: make test
+      - run:
+          name: Create artifacts
+          command: |
+            mkdir -p /tmp/images;
+            cp build/otelcol-hny /tmp/images;
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
       - store_artifacts:
-          path: /home/circleci/project/artifacts/
+          path: /tmp/images

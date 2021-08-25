@@ -179,6 +179,9 @@ flatten(2) |
     }
   },
   "processors": {
+    "timestamp": {
+      "round_to_nearest": "1s"
+    },
     "metricstransform": {
       "transforms": (
         $aggregate_labels_transforms +
@@ -199,7 +202,7 @@ flatten(2) |
     "pipelines": {
       "metrics": {
         "receivers": ["hostmetrics"],
-        "processors": ["metricstransform", "filter", "batch"],
+        "processors": ["metricstransform", "filter", "batch", "timestamp"],
         "exporters": ["logging", "otlp"]
       }
     }
