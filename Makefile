@@ -25,6 +25,6 @@ build/otelcol-hny: builder-config.yaml
 	opentelemetry-collector-builder --output-path=build --name=hny-otel --config=builder-config.yaml
 
 clean:
-	rm vendor-fixtures/* build/* compact-config.yaml test/tmp-*
+	rm -f vendor-fixtures/* build/* compact-config.yaml test/tmp-*
 
 .PHONY: all config collector clean test integration_test go_test
