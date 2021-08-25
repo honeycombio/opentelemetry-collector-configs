@@ -34,7 +34,7 @@ export VERSION=???
 make
 make test
 git tag $VERSION
-git push --follow-tags
+git push origin $VERSION
 ```
 
 Then, find the tag in GitHub, turn it into a release, and upload the files in `dist/` to that release. (Yes, this process could stand to be automated.)

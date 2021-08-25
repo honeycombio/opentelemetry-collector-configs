@@ -15,8 +15,9 @@ collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 bui
 collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
 
 .PHONY: release
-release: clean collector-bin collector-dist
+release: clean collector-bin collector-dist artifacts/honeycomb-metrics-config.yaml
 	cp build/otelcol_hny_* dist
+	cp artifacts/honeycomb-metrics-config.yaml dist
 	shasum -a 256 dist/* > dist/checksums.txt
 
 .PHONY: test
