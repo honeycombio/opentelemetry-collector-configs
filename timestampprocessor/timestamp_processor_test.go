@@ -2,6 +2,7 @@ package timestampprocessor
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -29,7 +30,7 @@ type testDataPoint struct {
 var (
 	standardTests = []metricTimestampTest{
 		{
-			name:           "timestamps end up rounded to nearest second",
+			name:           "timestamps end up truncated to the second",
 			roundToNearest: time.Second,
 			inMetrics: testResourceMetrics([]testDataPoint{
 				{1626298669697344000, "a"},
@@ -38,7 +39,6 @@ var (
 				{1626298669697627000, "d"},
 			}),
 			expectedDataPoints: []testDataPoint{
-				// 1626298670000000000 - max's value
 				{1626298669000000000, "a"},
 				{1626298669000000000, "b"},
 				{1626298669000000000, "c"},
@@ -46,7 +46,7 @@ var (
 			},
 		},
 		{
-			name:           "timestamps more than 1 second apart end up rounded to nearest second",
+			name:           "timestamps more than 1 second apart end up truncated to the second",
 			roundToNearest: time.Second,
 			inMetrics: testResourceMetrics([]testDataPoint{
 
@@ -62,6 +62,22 @@ var (
 				{1626298673000000000, "c"},
 				{1626298672000000000, "d"},
 				{1626298673000000000, "e"},
+			},
+		},
+		{
+			name:           "timestamps more than 1 minute apart end up truncated to the minute",
+			roundToNearest: time.Minute,
+			inMetrics: testResourceMetrics([]testDataPoint{
+				{1626298669697344000, "a"}, // (21:37:49.697)
+				{1626298832456255000, "b"}, // (21:40:32.456)
+				{1626298921875345000, "c"}, // (21:42:01.875)
+				{1626298913923145000, "d"}, // (21:41:53.923)
+			}),
+			expectedDataPoints: []testDataPoint{
+				{1626298620000000000, "a"}, // (21:37:00.000)
+				{1626298800000000000, "b"}, // (21:40:00.000)
+				{1626298920000000000, "c"}, // (21:42:00.000)
+				{1626298860000000000, "d"}, // (21:41:00.000)
 			},
 		},
 	}
@@ -101,7 +117,7 @@ func TestTimestampProcessor(t *testing.T) {
 			for i, gotDataPoint := range gotDataPoints {
 				expectedDataPoint := test.expectedDataPoints[i]
 				assert.Equal(t, gotDataPoint.Name, expectedDataPoint.Name)
-				assert.Equal(t, gotDataPoint.Timestamp, expectedDataPoint.Timestamp)
+				assert.Equal(t, gotDataPoint.Timestamp, expectedDataPoint.Timestamp, fmt.Sprintf("Got datapoint: %v, Expected datapoint: %v\n", gotDataPoint.Timestamp, expectedDataPoint.Timestamp))
 			}
 
 			assert.NoError(t, fmp.Shutdown(ctx))
