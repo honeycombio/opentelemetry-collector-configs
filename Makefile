@@ -81,5 +81,3 @@ build-package-internal:
 .PHONY: clean
 clean:
 	rm -f build/* compact-config.yaml test/tmp-* dist/*
-
-.PHONY: all config collector test integration_test go_test
