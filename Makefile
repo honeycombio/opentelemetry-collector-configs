@@ -18,7 +18,7 @@ collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-colle
 release: clean collector-bin collector-dist artifacts/honeycomb-metrics-config.yaml
 	cp build/otelcol_hny_* dist
 	cp artifacts/honeycomb-metrics-config.yaml dist
-	shasum -a 256 dist/* > dist/checksums.txt
+	(cd dist && shasum -a 256 * > checksums.txt)
 
 .PHONY: test
 test: go_test integration_test
