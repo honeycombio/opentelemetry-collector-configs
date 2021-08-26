@@ -40,8 +40,8 @@ fpm -s dir -t rpm -n $PKG_NAME -v ${VERSION#v} -f -p "$OUTPUT_DIR" \
     --license "$PKG_LICENSE" \
     --url "$PKG_URL" \
     --architecture "$ARCH" \
-    --config-files /etc/otel-collector/otel-collector.conf \
-    --config-files /etc/otel-collector/config.yaml \
+    --config-files /etc/otel-hny-collector/otel-hny-collector.conf \
+    --config-files /etc/otel-hny-collector/config.yaml \
     --rpm-summary "$PKG_DESCRIPTION" \
     --rpm-user "$PKG_USER" \
     --rpm-group "$PKG_GROUP" \
@@ -50,5 +50,5 @@ fpm -s dir -t rpm -n $PKG_NAME -v ${VERSION#v} -f -p "$OUTPUT_DIR" \
     --pre-uninstall "$PREUNINSTALL_PATH" \
     $OTELCOL_PATH=/usr/bin/$PROCESS_NAME \
     $SERVICE_PATH=/lib/systemd/system/$SERVICE_NAME.service \
-    $ENVFILE_PATH=/etc/otel-collector/otel-collector.conf \
-    $CONFIG_PATH=/etc/otel-collector/config.yaml
+    $ENVFILE_PATH=/etc/otel-hny-collector/otel-hny-collector.conf \
+    $CONFIG_PATH=/etc/otel-hny-collector/config.yaml

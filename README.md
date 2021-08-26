@@ -31,8 +31,8 @@ Simulate what's happening in CircleCI with: `docker run -it --mount=type=bind,so
 
 ```bash
 export VERSION=???
-make
 make test
+make release
 git tag $VERSION
 git push origin $VERSION
 ```

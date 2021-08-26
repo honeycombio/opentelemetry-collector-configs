@@ -16,7 +16,7 @@
 
 FPM_DIR="$( cd "$( dirname ${BASH_SOURCE[0]} )" && pwd )"
 
-PKG_NAME="otel-collector"
+PKG_NAME="otel-hny-collector"
 PKG_VENDOR="OpenTelemetry Community"
 PKG_MAINTAINER="OpenTelemetry Community <cncf-opentelemetry-community@lists.cncf.io>"
 PKG_DESCRIPTION="OpenTelemetry Collector"
@@ -25,7 +25,7 @@ PKG_URL="https://github.com/open-telemetry/opentelemetry-collector"
 PKG_USER="otel"
 PKG_GROUP="otel"
 
-SERVICE_NAME="otel-collector"
+SERVICE_NAME="otel-hny-collector"
 PROCESS_NAME="otelcol-hny"
 
 SERVICE_PATH="$FPM_DIR/$SERVICE_NAME.service"

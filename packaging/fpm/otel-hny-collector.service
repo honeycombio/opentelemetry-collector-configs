@@ -3,7 +3,7 @@ Description=OpenTelemetry Collector
 After=network.target
 
 [Service]
-EnvironmentFile=/etc/otel-collector/otel-collector.conf
+EnvironmentFile=/etc/otel-hny-collector/otel-hny-collector.conf
 ExecStart=/usr/bin/otelcol-hny $OTELCOL_OPTIONS
 KillMode=mixed
 Restart=on-failure
