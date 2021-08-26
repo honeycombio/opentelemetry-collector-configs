@@ -26,7 +26,7 @@ PKG_USER="otel"
 PKG_GROUP="otel"
 
 SERVICE_NAME="otel-collector"
-PROCESS_NAME="otelcol"
+PROCESS_NAME="otelcol-hny"
 
 SERVICE_PATH="$FPM_DIR/$SERVICE_NAME.service"
 ENVFILE_PATH="$FPM_DIR/$SERVICE_NAME.conf"
