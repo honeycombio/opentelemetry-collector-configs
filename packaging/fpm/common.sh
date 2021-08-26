@@ -17,11 +17,11 @@
 FPM_DIR="$( cd "$( dirname ${BASH_SOURCE[0]} )" && pwd )"
 
 PKG_NAME="otel-hny-collector"
-PKG_VENDOR="OpenTelemetry Community"
-PKG_MAINTAINER="OpenTelemetry Community <cncf-opentelemetry-community@lists.cncf.io>"
+PKG_VENDOR="Honeycomb"
+PKG_MAINTAINER="Honeycomb & the OpenTelemetry Community"
 PKG_DESCRIPTION="OpenTelemetry Collector"
 PKG_LICENSE="Apache 2.0"
-PKG_URL="https://github.com/open-telemetry/opentelemetry-collector"
+PKG_URL="https://github.com/honeycombio/opentelemetry-collector-configs"
 PKG_USER="otel"
 PKG_GROUP="otel"
 
