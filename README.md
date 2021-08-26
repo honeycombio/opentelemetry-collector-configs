@@ -29,12 +29,16 @@ Simulate what's happening in CircleCI with: `docker run -it --mount=type=bind,so
 
 ## Releasing
 
+Aside from the dependencies above you will also need the following:
+* [docker](https://docs.docker.com/get-docker/)
+* [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
+* [gh](https://github.com/cli/cli#installation)
+
 ```bash
 export VERSION=???
 make test
 make release
-git tag $VERSION
-git push origin $VERSION
+git tag v$VERSION
+git push origin v$VERSION
+gh release create v$VERSION ./dist/*
 ```
-
-Then, find the tag in GitHub, turn it into a release, and upload the files in `dist/` to that release. (Yes, this process could stand to be automated.)
