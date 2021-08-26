@@ -46,19 +46,28 @@ wait $otelcol_pid
 echo "success!"
 
 # assert that metric names are correct
-echo "checking that we only generated metrics with allowed names..."
-allowed_names=$(<./test/allowed_metric_names.txt)
-for metric_name in $(jq -r '
+found_names=$(jq -r '
   .resourceMetrics[] |
   .instrumentationLibraryMetrics[] |
   .metrics[] |
-  .name')
+  .name' < $output_file)
+echo "checking that we only generated metrics with allowed names..."
+allowed_names=$(<./test/allowed_metric_names.txt)
+
+for metric_name in $found_names
 do
   if [[ ${allowed_names} != *"$metric_name"* ]]; then
     echo "found disallowed metric $metric_name"
     exit 1
   fi
-done < $output_file
+done
+
+echo "ensuring we have at least ~40 distinct metrics (less than that is an indication something is wrong)..."
+metric_count=$(echo $found_names | wc -w)
+if (( ${metric_count} < 40 )); then
+  echo "only found ${metric_count} distinct metrics"
+  exit 1
+fi
 
 unique_timestamps=$(jq -sr '
     .[0].resourceMetrics[] |

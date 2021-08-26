@@ -16,7 +16,7 @@ jobs:
           name: Create artifacts
           command: |
             mkdir -p /tmp/images;
-            cp otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
+            cp build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build

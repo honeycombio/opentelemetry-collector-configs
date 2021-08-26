@@ -119,7 +119,7 @@ func testResourceMetrics(dataPoints []testDataPoint) pdata.Metrics {
 		m.SetDataType(pdata.MetricDataTypeGauge)
 		dp := m.Gauge().DataPoints().AppendEmpty()
 		dp.SetTimestamp(namedDataPoint.Timestamp)
-		dp.SetDoubleVal(123)
+		dp.SetValue(123)
 	}
 	return md
 }
