@@ -3,7 +3,6 @@ package timestampprocessor
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -23,7 +22,7 @@ func newTimestampMetricProcessor(logger *zap.Logger, cfg *Config) (*filterMetric
 // processMetrics takes incoming metrics and adjusts their timestamps to
 // the nearest time unit (specified by duration in the config)
 func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Metrics) (pdata.Metrics, error) {
-	// set the timestamps to the nearest second
+	// set the timestamps to the nearest time unit
 	for i := 0; i < src.ResourceMetrics().Len(); i++ {
 		rm := src.ResourceMetrics().At(i)
 		for j := 0; j < rm.InstrumentationLibraryMetrics().Len(); j++ {
@@ -36,14 +35,14 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 					dataPoints := m.Gauge().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
+						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
 						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeSum:
 					dataPoints := m.Sum().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
+						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
 						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeHistogram:
@@ -57,7 +56,7 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 					dataPoints := m.Summary().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
-						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(time.Second)
+						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
 						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
 					}
 				default:
