@@ -16,7 +16,7 @@ In order to use this configuration you will need a version of opentelemetry-coll
 
 ## Building the config
 
-If you'd like to build a version of the configuration yourself, clone this repo and run `make`. You'll need these prerequisites available in your `$PATH`:
+If you'd like to build a version of the configuration yourself, clone this repo and run `make config`. You'll need these prerequisites available in your `$PATH`:
 
 * [go](https://golang.org/dl/)
 * [jq](https://stedolan.github.io/jq/download/)
@@ -26,3 +26,19 @@ If you'd like to build a version of the configuration yourself, clone this repo 
 Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
 
 Simulate what's happening in CircleCI with: `docker run -it --mount=type=bind,source="$(pwd)",target=/home/circleci/project maxedmandshny/cci-go-yq /bin/bash`
+
+## Releasing
+
+Aside from the dependencies above you will also need the following:
+* [docker](https://docs.docker.com/get-docker/)
+* [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
+* [gh](https://github.com/cli/cli#installation)
+
+```bash
+export VERSION=???
+make test
+make release
+git tag v$VERSION
+git push origin v$VERSION
+gh release create v$VERSION ./dist/*
+```

@@ -206,13 +206,13 @@ func testResourceMetrics(metricType string, dataPoints []testDataPoint) pdata.Me
 			m.SetDataType(pdata.MetricDataTypeGauge)
 			dp := m.Gauge().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
-			dp.SetDoubleVal(123)
+			dp.SetValue(123)
 
 		case "sum":
 			m.SetDataType(pdata.MetricDataTypeSum)
 			dp := m.Sum().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
-			dp.SetDoubleVal(456)
+			dp.SetValue(456)
 
 		case "histogram":
 			m.SetDataType(pdata.MetricDataTypeHistogram)
