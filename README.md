@@ -3,7 +3,7 @@
 Creates a configuration file for OpenTelemetry Collector that:
 
 - Sends OTLP metrics to Honeycomb
-- Enables the [hostmetrics receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver)
+- Enables the [hostmetrics receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/hostmetricsreceiver)
 - Transforms metrics from the hostmetrics receiver such that they generate optimally-wide Honeycomb records ([see more about the event transformation here](./docs/metrics-transformation.md))
 
 A current version of the config that this repository generates should be available on the [Releases page](https://github.com/honeycombio/opentelemetry-collector-configs/releases).
