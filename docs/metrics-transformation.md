@@ -157,9 +157,9 @@ processors:
             label_set: []
 ```
 
-The hostmetrics receiver comes with a [`metadata.yaml` file](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/metadata.yaml) that lists all of the metrics it is capable of producing, and all of the tags that those metrics may receive. This repository generates a config like the one in the above example, using this yaml file.
+The hostmetrics receiver comes with a [`metadata.yaml` file](https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml) that lists all of the metrics it is capable of producing, and all of the tags that those metrics may receive. This repository generates a config like the one in the above example, using this yaml file.
 
-In particular, for any metric produced by this collector, we do this transform on any label that is not identified by an enum field. (As an example, [here is what the enum of filesystem.device looks like](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/metadata.yaml#L26-L28).) _Exception: network.state (for the metric system.network.connections) is a well-bounded list of values, so we do not aggregate those away._
+In particular, for any metric produced by this collector, we do this transform on any label that is not identified by an enum field. (As an example, [here is what the enum of filesystem.device looks like](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml#L26-L28).) _Exception: network.state (for the metric system.network.connections) is a well-bounded list of values, so we do not aggregate those away._
 
 ### Extract static, well-known attribute groups into metric names
 
@@ -305,9 +305,9 @@ service:
       exporters: [otlp]
 ```
 
-The hostmetrics receiver [comes with a `metadata.yaml` file](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/metadata.yaml) that lists all of the metrics it is capable of producing, and all of the tags that those metrics may receive. This repository generates a config like the one in the above example, using this yaml file.
+The hostmetrics receiver [comes with a `metadata.yaml` file](https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml) that lists all of the metrics it is capable of producing, and all of the tags that those metrics may receive. This repository generates a config like the one in the above example, using this yaml file.
 
-In particular, for any metric produced by the hostmetrics reciever, we do this transform on any label that is identified by an enum field. (As an example, [here is what the enum of `mem.state` looks like](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/hostmetricsreceiver/metadata.yaml#L21-L24).) If there is more than one label with an enum, we should apply them in a consistent order defined by their order in the yaml file.... for example, `system.paging.operations` with `{direction: page_in, type: minor}` is repackaged into `system.paging.operations.page_in.minor` rather than `system.paging.operations.minor.page_in`.
+In particular, for any metric produced by the hostmetrics reciever, we do this transform on any label that is identified by an enum field. (As an example, [here is what the enum of `mem.state` looks like](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml#L21-L24).) If there is more than one label with an enum, we should apply them in a consistent order defined by their order in the yaml file.... for example, `system.paging.operations` with `{direction: page_in, type: minor}` is repackaged into `system.paging.operations.page_in.minor` rather than `system.paging.operations.minor.page_in`.
 
 ### Snap timestamps to the previous second
 
