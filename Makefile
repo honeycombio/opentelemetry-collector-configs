@@ -58,7 +58,6 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	ls -al builder-config.yaml 
 	opentelemetry-collector-builder --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --config=builder-config.yaml
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
