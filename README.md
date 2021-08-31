@@ -3,7 +3,7 @@
 Creates a configuration file for OpenTelemetry Collector that:
 
 - Sends OTLP metrics to Honeycomb
-- Enables the [hostmetrics receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver/hostmetricsreceiver)
+- Enables the [hostmetrics receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver)
 - Transforms metrics from the hostmetrics receiver such that they generate optimally-wide Honeycomb records ([see more about the event transformation here](./docs/metrics-transformation.md))
 
 A current version of the config that this repository generates should be available on the [Releases page](https://github.com/honeycombio/opentelemetry-collector-configs/releases).
@@ -18,10 +18,10 @@ In order to use this configuration you will need a version of opentelemetry-coll
 
 If you'd like to build a version of the configuration yourself, clone this repo and run `make config`. You'll need these prerequisites available in your `$PATH`:
 
-* [go](https://golang.org/dl/)
-* [jq](https://stedolan.github.io/jq/download/)
-* [yq](https://kislyuk.github.io/yq/#installation)
-* [opentelemetry-collector-builder](https://github.com/open-telemetry/opentelemetry-collector-builder)
+- [go](https://golang.org/dl/)
+- [jq](https://stedolan.github.io/jq/download/)
+- [yq](https://kislyuk.github.io/yq/#installation)
+- [opentelemetry-collector-builder](https://github.com/open-telemetry/opentelemetry-collector-builder)
 
 Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
 
