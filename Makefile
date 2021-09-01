@@ -38,7 +38,7 @@ artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor-fixtures/hos
 
 # copy hostmetrics metadata yaml file from the OpenTelemetry Collector repository, and prepend a note saying it's vendored
 vendor-fixtures/hostmetrics-receiver-metadata.yaml:
-	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/main/receiver/hostmetricsreceiver/metadata.yaml'; \
+	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
 build/otelcol_hny_darwin_amd64:
@@ -58,7 +58,6 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	ls -al builder-config.yaml 
 	opentelemetry-collector-builder --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --config=builder-config.yaml
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
