@@ -36,7 +36,6 @@ Aside from the dependencies above you will also need the following:
 
 ```bash
 export VERSION=???
-make test
 make release
 git tag v$VERSION
 git push origin v$VERSION

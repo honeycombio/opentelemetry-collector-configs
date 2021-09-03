@@ -15,7 +15,12 @@ collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 bui
 collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
 
 .PHONY: release
-release: clean collector-bin collector-dist artifacts/honeycomb-metrics-config.yaml
+release:
+	$(MAKE) clean
+	$(MAKE) test
+	$(MAKE) artifacts/honeycomb-metrics-config.yaml
+	$(MAKE) collector-bin
+	$(MAKE) collector-dist
 	cp build/otelcol_hny_* dist
 	cp artifacts/honeycomb-metrics-config.yaml dist
 	(cd dist && shasum -a 256 * > checksums.txt)
@@ -58,7 +63,7 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	opentelemetry-collector-builder --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --config=builder-config.yaml
+	opentelemetry-collector-builder --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
@@ -79,4 +84,4 @@ build-package-internal:
 
 .PHONY: clean
 clean:
-	rm -f build/* compact-config.yaml test/tmp-* dist/*
+	rm -f build/* compact-config.yaml test/tmp-* dist/* artifacts/*
