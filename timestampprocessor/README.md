@@ -2,7 +2,7 @@
 
 Supported pipeline types: metrics
 
-The timestamp processor will round all timestamps in metrics streams to the nearest <duration>.
+The timestamp processor will round all timestamps in metrics streams to the nearest `<duration>`.
 
 Examples:
 
