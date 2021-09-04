@@ -165,7 +165,7 @@ flatten(2) |
   },
   "receivers": {
     "hostmetrics": {
-      "collection_interval": ($ENV.COLLECTION_INTERVAL // "1m"),
+      "collection_interval": ($ENV.COLLECTION_INTERVAL // "10s"),
       "scrapers": {
         "memory": {},
         "cpu": {},
@@ -179,8 +179,15 @@ flatten(2) |
     }
   },
   "processors": {
+    "resourcedetection": {
+      "detectors": ["env", "system"]
+    },
     "timestamp": {
       "round_to_nearest": "1s"
+    },
+    "batch": {
+      "send_batch_size": 8192,
+      "timeout": "200ms"
     },
     "metricstransform": {
       "transforms": (
@@ -195,14 +202,13 @@ flatten(2) |
           "metric_names": $metrics_to_exclude
         }
       }
-    },
-    "batch": {}
+    }
   },
   "service": {
     "pipelines": {
       "metrics": {
         "receivers": ["hostmetrics"],
-        "processors": ["metricstransform", "filter", "batch", "timestamp"],
+        "processors": ["metricstransform", "filter", "timestamp", "resourcedetection", "batch"],
         "exporters": ["logging", "otlp"]
       }
     }
