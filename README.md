@@ -34,10 +34,8 @@ Aside from the dependencies above you will also need the following:
 * [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
 * [gh](https://github.com/cli/cli#installation)
 
+Make sure you have committed all code and are on an appropriate branch, then run:
+
 ```bash
-export VERSION=???
-make release
-git tag v$VERSION
-git push origin v$VERSION
-gh release create v$VERSION ./dist/*
+./release.sh
 ```
