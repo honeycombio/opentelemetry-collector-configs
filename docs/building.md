@@ -2,6 +2,8 @@
 
 Using the configuration provided by this repository requires a build of OpenTelemetry Collector that contains the following plugins:
 
+* [the `hostmetrics` receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/hostmetricsreceiver#readme): Lives in the contrib repository
+* [the `resourcedetection` processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/resourcedetectionprocessor): Lives in the contrib repository
 * [the `metricstransform` processor](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/metricstransformprocessor#readme): Lives in the contrib repository
 * [the `timestamp` processor](../timestampprocessor): Lives in this repository
 
