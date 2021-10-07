@@ -36,28 +36,28 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
 						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
+						gotDataPoint.SetTimestamp(pdata.NewTimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeSum:
 					dataPoints := m.Sum().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
 						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
+						gotDataPoint.SetTimestamp(pdata.NewTimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeHistogram:
 					dataPoints := m.Histogram().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
 						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
+						gotDataPoint.SetTimestamp(pdata.NewTimestampFromTime(snappedTimestamp))
 					}
 				case pdata.MetricDataTypeSummary:
 					dataPoints := m.Summary().DataPoints()
 					for l := 0; l < dataPoints.Len(); l++ {
 						gotDataPoint := dataPoints.At(l)
 						snappedTimestamp := gotDataPoint.Timestamp().AsTime().Truncate(*fmp.cfg.RoundToNearest)
-						gotDataPoint.SetTimestamp(pdata.TimestampFromTime(snappedTimestamp))
+						gotDataPoint.SetTimestamp(pdata.NewTimestampFromTime(snappedTimestamp))
 					}
 				default:
 					fmt.Printf("Unknown type")
