@@ -2,7 +2,7 @@ FROM cimg/go:1.17
 
 ENV PYENV_ROOT=/home/circleci/.pyenv \
 	PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH \
-	OTC_BUILDER_VERSON=0.36.0
+	OTC_BUILDER_VERSON=0.37.0
 
 RUN sudo apt-get update && \
 	sudo apt-get install -y \
