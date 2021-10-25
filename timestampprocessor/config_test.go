@@ -32,9 +32,9 @@ func TestLoadingConfigStrict(t *testing.T) {
 		expCfg   *Config
 	}{
 		{
-			filterID: config.NewIDWithName("timestamp", "1sec"),
+			filterID: config.NewComponentIDWithName("timestamp", "1sec"),
 			expCfg: &Config{
-				ProcessorSettings: config.NewProcessorSettings(config.NewIDWithName(typeStr, "1sec")),
+				ProcessorSettings: config.NewProcessorSettings(config.NewComponentIDWithName(typeStr, "1sec")),
 				RoundToNearest:    &oneSecond,
 			},
 		},

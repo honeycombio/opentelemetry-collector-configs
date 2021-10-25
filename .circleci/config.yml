@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/repo
     docker:
-      - image: honeycombio/cci-go-yq:0.0.3
+      - image: honeycombio/cci-go-yq:0.0.4
     steps:
       - checkout
       - restore_cache:
