@@ -12,7 +12,6 @@ import (
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/config/configtest"
 	"go.opentelemetry.io/collector/consumer/consumertest"
-	"go.opentelemetry.io/collector/service/servicetest"
 )
 
 func TestType(t *testing.T) {
@@ -51,7 +50,7 @@ func TestCreateProcessors(t *testing.T) {
 
 		factory := NewFactory()
 		factories.Processors[typeStr] = factory
-		cfg, err := servicetest.LoadConfigAndValidate(path.Join(".", "testdata", test.configName), factories)
+		cfg, err := configtest.LoadConfigAndValidate(path.Join(".", "testdata", test.configName), factories)
 		assert.Nil(t, err)
 
 		for name, cfg := range cfg.Processors {

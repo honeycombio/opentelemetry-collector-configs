@@ -19,10 +19,10 @@ var processorCapabilities = consumer.Capabilities{MutatesData: true}
 
 // NewFactory returns a new factory for the Filter processor.
 func NewFactory() component.ProcessorFactory {
-	return component.NewProcessorFactory(
+	return processorhelper.NewFactory(
 		typeStr,
 		createDefaultConfig,
-		component.WithMetricsProcessor(createMetricsProcessor))
+		processorhelper.WithMetrics(createMetricsProcessor))
 }
 
 func createDefaultConfig() config.Processor {
