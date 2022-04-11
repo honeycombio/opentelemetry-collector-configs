@@ -1,3 +1,16 @@
+# Release v1.4.0 (2022-04-11)
+
+### Changed
+
+- using `configtest` instead of `servicetest` due to the update of collector to 0.48.0
+
+### Dependencies
+
+- Bump go.opentelemetry.io/collector from 0.37.0 to 0.48.0
+- Bump go.opentelemetry.io/collector/model from 0.37.0 to 0.48.0
+- Bump github.com/stretchr/testify from 1.7.0 to 1.7.1
+- Bump go.uber.org/zap from 1.19.1 to 1.21.1
+
 # Release v1.3.0 (2021-10-25)
 
 ### Changed
