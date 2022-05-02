@@ -48,7 +48,7 @@ echo "success!"
 # assert that metric names are correct
 found_names=$(jq -r '
   .resourceMetrics[] |
-  .instrumentationLibraryMetrics[] |
+  .scopeMetrics[] |
   .metrics[] |
   .name' < $output_file)
 echo "checking that we only generated metrics with allowed names..."
@@ -71,7 +71,7 @@ fi
 
 unique_timestamps=$(jq -sr '
     .[0].resourceMetrics[] |
-    .instrumentationLibraryMetrics[] |
+    .scopeMetrics[] |
     .metrics[] |
     .sum // .gauge // .summary // .histogram |
     .dataPoints[] |

@@ -197,7 +197,7 @@ func testResourceMetrics(metricType string, dataPoints []testDataPoint) pdata.Me
 
 	for _, namedDataPoint := range dataPoints {
 		rm := md.ResourceMetrics().AppendEmpty()
-		ms := rm.InstrumentationLibraryMetrics().AppendEmpty().Metrics()
+		ms := rm.ScopeMetrics().AppendEmpty().Metrics()
 		m := ms.AppendEmpty()
 		m.SetName(namedDataPoint.Name)
 
@@ -240,7 +240,7 @@ func UnwrapMetricsList(wrappedMetricsList []pdata.Metrics) (metricObjects []pdat
 		for i := 0; i < resourceMetrics.Len(); i++ {
 
 			resourceMetric := resourceMetrics.At(i)
-			instrumentationLibraryMetrics := resourceMetric.InstrumentationLibraryMetrics()
+			instrumentationLibraryMetrics := resourceMetric.ScopeMetrics()
 			for j := 0; j < instrumentationLibraryMetrics.Len(); j++ {
 
 				instrumentationLibraryMetric := instrumentationLibraryMetrics.At(j)
@@ -297,7 +297,7 @@ func TestNilILM(t *testing.T) {
 	metrics := pdata.NewMetrics()
 	rms := metrics.ResourceMetrics()
 	rm := rms.AppendEmpty()
-	ilms := rm.InstrumentationLibraryMetrics()
+	ilms := rm.ScopeMetrics()
 	ilms.AppendEmpty()
 	requireNotPanics(t, metrics)
 }
@@ -306,7 +306,7 @@ func TestNilMetric(t *testing.T) {
 	metrics := pdata.NewMetrics()
 	rms := metrics.ResourceMetrics()
 	rm := rms.AppendEmpty()
-	ilms := rm.InstrumentationLibraryMetrics()
+	ilms := rm.ScopeMetrics()
 	ilm := ilms.AppendEmpty()
 	ms := ilm.Metrics()
 	ms.AppendEmpty()

@@ -25,8 +25,8 @@ func (fmp *filterMetricProcessor) processMetrics(_ context.Context, src pdata.Me
 	// set the timestamps to the nearest time unit
 	for i := 0; i < src.ResourceMetrics().Len(); i++ {
 		rm := src.ResourceMetrics().At(i)
-		for j := 0; j < rm.InstrumentationLibraryMetrics().Len(); j++ {
-			ms := rm.InstrumentationLibraryMetrics().At(j)
+		for j := 0; j < rm.ScopeMetrics().Len(); j++ {
+			ms := rm.ScopeMetrics().At(j)
 			for k := 0; k < ms.Metrics().Len(); k++ {
 				m := ms.Metrics().At(k)
 
