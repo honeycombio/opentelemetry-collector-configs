@@ -14,7 +14,7 @@ In order to use this configuration you will need a version of opentelemetry-coll
 
 ## Timestamp processor
 
-⚠ Note that this repository currently contains [code for a `timestamp` processor for OpenTelemetry Collector](./timestampprocessor). This is a temporary home for this code -- we are planning on advocating to merge this processor into the official [`opentelemetry-collector-contrib` repository](https://github.com/open-telemetry/opentelemetry-collector-contrib).
+This repository contains [code for a `timestamp` processor for OpenTelemetry Collector](./timestampprocessor), which allows rounding timestamps in metrics streams to a configurable value.
 
 ## Building the config
 
