@@ -1,3 +1,5 @@
+[![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/opentelemetry-collector-configs?color=yellow)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
+
 👋  Hi there! If you have questions about this repository, please head on over to our Honeycomb Pollenators Slack channel and join us in the [#discuss-metrics channel](https://honeycombpollinators.slack.com/archives/C025CD38GBS) there -- we'll be happy to help you out!
 
 ## OpenTelemetry Collector Configuration Generator
