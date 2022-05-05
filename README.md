@@ -1,3 +1,5 @@
+[![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/opentelemetry-collector-configs?color=yellow)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
+
 👋  Hi there! If you have questions about this repository, please head on over to our Honeycomb Pollenators Slack channel and join us in the [#discuss-metrics channel](https://honeycombpollinators.slack.com/archives/C025CD38GBS) there -- we'll be happy to help you out!
 
 ## OpenTelemetry Collector Configuration Generator
@@ -14,7 +16,7 @@ In order to use this configuration you will need a version of opentelemetry-coll
 
 ## Timestamp processor
 
-⚠ Note that this repository currently contains [code for a `timestamp` processor for OpenTelemetry Collector](./timestampprocessor). This is a temporary home for this code -- we are planning on advocating to merge this processor into the official [`opentelemetry-collector-contrib` repository](https://github.com/open-telemetry/opentelemetry-collector-contrib).
+This repository contains [code for a `timestamp` processor for OpenTelemetry Collector](./timestampprocessor), which allows rounding timestamps in metrics streams to a configurable value.
 
 ## Building the config
 
