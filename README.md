@@ -25,7 +25,7 @@ If you'd like to build a version of the configuration yourself, clone this repo 
 - [go](https://golang.org/dl/)
 - [jq](https://stedolan.github.io/jq/download/)
 - [yq](https://kislyuk.github.io/yq/#installation)
-- [opentelemetry-collector-builder](https://github.com/open-telemetry/opentelemetry-collector-builder)
+- [ocb](https://github.com/open-telemetry/opentelemetry-collector-releases) built from the `opentelemetry-collector-releases` project
 
 Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
 
@@ -34,9 +34,10 @@ Simulate what's happening in CircleCI with: `docker run -it --mount=type=bind,so
 ## Releasing
 
 Aside from the dependencies above you will also need the following:
-* [docker](https://docs.docker.com/get-docker/)
-* [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
-* [gh](https://github.com/cli/cli#installation)
+
+- [docker](https://docs.docker.com/get-docker/)
+- [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
+- [gh](https://github.com/cli/cli#installation)
 
 Make sure you have committed all code and are on an appropriate branch, then run:
 
