@@ -30,19 +30,26 @@ import (
 
 func toTraces(traces datadogpb.Traces, req *http.Request) ptrace.Traces {
 	dest := ptrace.NewTraces()
-	resSpans := dest.ResourceSpans().AppendEmpty()
-	resSpans.SetSchemaUrl(semconv.SchemaURL)
+	resSpans := dest.ResourceSpans()
+	rspan := resSpans.AppendEmpty()
+	resource := rspan.Resource()
+	rattrs := resource.Attributes()
+	rattrs.Clear()
+	rattrs.EnsureCapacity(3)
+	rattrs.UpsertString("telemetry.sdk.name", "Datadog-"+req.Header.Get("Datadog-Meta-Lang"))
+	rattrs.UpsertString("telemetry.sdk.version", "Datadog-"+req.Header.Get("Datadadog-Meta-Tracer-Version"))
+	rattrs.UpsertString("telemetry.sdk.language", "Datadog-"+req.Header.Get("Datadog-Meta-Lang"))
+	ils := rspan.ScopeSpans().AppendEmpty()
+
+	ils.Scope().SetName("Datadog-" + req.Header.Get("Datadog-Meta-Lang"))
+	ils.Scope().SetVersion(req.Header.Get("Datadog-Meta-Tracer-Version"))
 
 	for _, trace := range traces {
-		ils := resSpans.ScopeSpans().AppendEmpty()
-		ils.Scope().SetName("Datadog-" + req.Header.Get("Datadog-Meta-Lang"))
-		ils.Scope().SetVersion(req.Header.Get("Datadog-Meta-Tracer-Version"))
 
 		spans := ptrace.NewSpanSlice()
 		spans.EnsureCapacity(len(trace))
 		for _, span := range trace {
 			newSpan := spans.AppendEmpty()
-
 			newSpan.SetTraceID(uInt64ToTraceID(0, span.TraceID))
 			newSpan.SetSpanID(uInt64ToSpanID(span.SpanID))
 			newSpan.SetStartTimestamp(pcommon.Timestamp(span.Start))
