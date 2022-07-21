@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strings"
 
+	"runtime/debug"
+
 	datadogpb "github.com/DataDog/datadog-agent/pkg/trace/exportable/pb"
 	"github.com/tinylib/msgp/msgp"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -28,17 +30,27 @@ import (
 	semconv "go.opentelemetry.io/collector/semconv/v1.6.1"
 )
 
+func addResourceData(req *http.Request, rs *pcommon.Resource) {
+	version := ""
+	bi, ok := debug.ReadBuildInfo()
+	if ok {
+		version = bi.Main.Version
+	}
+	attrs := rs.Attributes()
+	attrs.Clear()
+	attrs.EnsureCapacity(3)
+	attrs.UpsertString("telemetry.sdk.name", "Datadog")
+	attrs.UpsertString("telemetry.sdk.version", version+"/"+"Datadog-"+req.Header.Get("Datadog-Meta-Tracer-Version"))
+	attrs.UpsertString("telemetry.sdk.language", req.Header.Get("Datadog-Meta-Lang"))
+}
 func toTraces(traces datadogpb.Traces, req *http.Request) ptrace.Traces {
+
 	dest := ptrace.NewTraces()
 	resSpans := dest.ResourceSpans()
 	rspan := resSpans.AppendEmpty()
 	resource := rspan.Resource()
-	rattrs := resource.Attributes()
-	rattrs.Clear()
-	rattrs.EnsureCapacity(3)
-	rattrs.UpsertString("telemetry.sdk.name", "Datadog-"+req.Header.Get("Datadog-Meta-Lang"))
-	rattrs.UpsertString("telemetry.sdk.version", "Datadog-"+req.Header.Get("Datadadog-Meta-Tracer-Version"))
-	rattrs.UpsertString("telemetry.sdk.language", "Datadog-"+req.Header.Get("Datadog-Meta-Lang"))
+	addResourceData(req, &resource)
+
 	ils := rspan.ScopeSpans().AppendEmpty()
 
 	ils.Scope().SetName("Datadog-" + req.Header.Get("Datadog-Meta-Lang"))

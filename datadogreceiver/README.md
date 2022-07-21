@@ -27,7 +27,7 @@ exporters:
 receivers:
   - import: go.opentelemetry.io/collector/receiver/otlpreceiver
     gomod: go.opentelemetry.io/collector v0.54.0
-  - gomod: "github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver v1.5.0"
+  - gomod: "github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver v0.1.0"
 processors:
   - import: go.opentelemetry.io/collector/processor/batchprocessor
     gomod: go.opentelemetry.io/collector v0.54.0
@@ -47,7 +47,7 @@ In the replaces section of the builder, reference this directory instead
 ```yaml
 replaces:
   # a list of "replaces" directives that will be part of the resulting go.mod
-  - github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver v1.5.0 => /path/to/this/directory
+  - github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver v0.1.0 => /path/to/this/directory
 
 ```
 
@@ -71,3 +71,21 @@ Default: `0.0.0.0:8126`
 The read timeout of the HTTP Server
 
 Default: 60s
+
+## Publishing a new version of this module
+
+Please use [semantic versioning standards](https://golang.org/doc/modules/version-numbers) when deciding on a new version number.
+
+First, make sure that all changes are committed and pushed to the main branch.
+
+Then:
+```bash
+go test ./...
+git tag datadogreceiver/v0.1.0 # substitute the appropriate version
+git push --follow-tags
+```
+
+To confirm that the published module is available:
+```bash
+go list -m github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver@v0.1.0 
+```
