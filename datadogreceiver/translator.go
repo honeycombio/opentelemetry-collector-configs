@@ -17,12 +17,9 @@ package datadogreceiver // import "github.com/open-telemetry/opentelemetry-colle
 import (
 	"encoding/binary"
 	"encoding/json"
-	"mime"
+	"fmt"
 	"net/http"
 	"strings"
-
-	"runtime/debug"
-
 	datadogpb "github.com/DataDog/datadog-agent/pkg/trace/exportable/pb"
 	"github.com/tinylib/msgp/msgp"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -31,11 +28,6 @@ import (
 )
 
 func addResourceData(req *http.Request, rs *pcommon.Resource) {
-	version := ""
-	bi, ok := debug.ReadBuildInfo()
-	if ok {
-		version = bi.Main.Version
-	}
 	attrs := rs.Attributes()
 	attrs.Clear()
 	attrs.EnsureCapacity(3)
@@ -76,8 +68,9 @@ func toTraces(traces datadogpb.Traces, req *http.Request) ptrace.Traces {
 			}
 
 			attrs := newSpan.Attributes()
-			attrs.EnsureCapacity(len(span.GetMeta()) + 1)
+			attrs.EnsureCapacity(len(span.GetMeta()) + 2)
 			attrs.InsertString(semconv.AttributeServiceName, span.Service)
+			attrs.InsertString("resource", span.Name)
 			for k, v := range span.GetMeta() {
 				k = translateDataDogKeyToOtel(k)
 				if len(k) > 0 {
@@ -130,8 +123,16 @@ func translateDataDogKeyToOtel(k string) string {
 
 }
 
+type InvalidMediaTypeError struct {
+    Type string
+}
+
+func (e *InvalidMediaTypeError) Error() string {
+    return fmt.Sprintf("Media type %s is not supported", e.Type)
+}
+
 func decodeRequest(req *http.Request, dest *datadogpb.Traces) error {
-	switch mediaType := getMediaType(req); mediaType {
+	switch mediaType := req.Header.Get("Content-Type"); mediaType {
 	case "application/msgpack":
 		if strings.HasPrefix(req.URL.Path, "/v0.5") {
 			reader := datadogpb.NewMsgpReader(req.Body)
@@ -139,17 +140,11 @@ func decodeRequest(req *http.Request, dest *datadogpb.Traces) error {
 			return dest.DecodeMsgDictionary(reader)
 		}
 		return msgp.Decode(req.Body, dest)
-	default:
+	case "application/json":
 		return json.NewDecoder(req.Body).Decode(dest)
+	default:
+		return &InvalidMediaTypeError { mediaType }
 	}
-}
-
-func getMediaType(req *http.Request) string {
-	mt, _, err := mime.ParseMediaType(req.Header.Get("Content-Type"))
-	if err != nil {
-		return "application/json"
-	}
-	return mt
 }
 
 func uInt64ToTraceID(high, low uint64) pcommon.TraceID {

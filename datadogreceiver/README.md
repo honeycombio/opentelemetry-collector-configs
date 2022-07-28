@@ -76,7 +76,7 @@ Default: 60s
 
 Please use [semantic versioning standards](https://golang.org/doc/modules/version-numbers) when deciding on a new version number.
 
-First, make sure that all changes are committed and pushed to the main branch.
+First, make sure that all changes are committed and pushed to the main branch. Make sure version.go is with the correct version number.
 
 Then:
 ```bash
