@@ -26,6 +26,7 @@ import (
 
 const (
 	typeStr = "datadog"
+	stability = component.StabilityLevelAlpha
 )
 
 // NewFactory creates a factory for DataDog receiver.
@@ -33,7 +34,7 @@ func NewFactory() component.ReceiverFactory {
 	return component.NewReceiverFactory(
 		typeStr,
 		createDefaultConfig,
-		component.WithTracesReceiver(createTracesReceiver))
+		component.WithTracesReceiverAndStabilityLevel(createTracesReceiver, stability))
 
 }
 

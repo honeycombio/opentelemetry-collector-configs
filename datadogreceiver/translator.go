@@ -67,15 +67,20 @@ func toTraces(traces datadogpb.Traces, req *http.Request) ptrace.Traces {
 				newSpan.Status().SetCode(ptrace.StatusCodeOk)
 			}
 
-			attrs := newSpan.Attributes()
-			attrs.EnsureCapacity(len(span.GetMeta()) + 2)
-			attrs.InsertString(semconv.AttributeServiceName, span.Service)
-			attrs.InsertString("resource", span.Name)
+			validattributes := make(map[string]string)
 			for k, v := range span.GetMeta() {
 				k = translateDataDogKeyToOtel(k)
 				if len(k) > 0 {
-					attrs.InsertString(k, v)
+					validattributes[k] = v
 				}
+			}
+
+			attrs := newSpan.Attributes()
+			attrs.EnsureCapacity(len(validattributes) + 2)
+			attrs.InsertString(semconv.AttributeServiceName, span.Service)
+			attrs.InsertString("resource", span.Name)
+			for k, v := range validattributes {
+				attrs.InsertString(k, v)
 			}
 
 			switch span.Type {

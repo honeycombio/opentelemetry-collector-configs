@@ -1,9 +1,11 @@
 # Datadog APM Receiver
 
 ## Overview
-The Datadog APM Receiver accepts traces in the Datadog Trace Agent Format
+The Datadog APM Receiver accepts traces in the Datadog Trace Agent Format.
 
-###Supported Datadog APIs
+This module is Experimental.
+
+### Supported Datadog APIs
 - v0.3 (msgpack and json)
 - v0.4 (msgpack and json)
 - v0.5 (msgpack custom format)
