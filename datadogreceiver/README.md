@@ -8,7 +8,7 @@ This module is **Experimental**.
 
 The code was originally written in a [closed PR](https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/5836) from the opentelemetry-collector-contrib repo and then updated to the latest standards.
 
-The plan is to contribute this back into the opentelemetry-collector-contrib repository after it's been used by several users and determined to be useful enough to contribute + maintain in the upstream long-term.
+The plan is to contribute this back into the opentelemetry-collector-contrib repository after it's been used by several users and determined to be useful enough to contribute and maintain in the upstream long-term.
 
 ### Supported Datadog APIs
 - v0.3 (msgpack and json)
