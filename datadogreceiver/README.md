@@ -3,7 +3,7 @@
 ## Overview
 The Datadog APM Receiver accepts traces in the Datadog Trace Agent Format.
 
-This module is Experimental. The code was originally written in a closed PR from the opentelemetry-collector-contrib repo and then updated to the latest standards. The intent is to contribute this back into the opentelemetry-collector-contrib.
+This module is Experimental. The code was originally written in a [closed PR](https://github.com/open-telemetry/opentelemetry-collector-contrib/pull/5836) from the opentelemetry-collector-contrib repo and then updated to the latest standards. The intent is to contribute this back into the opentelemetry-collector-contrib.
 
 ### Supported Datadog APIs
 - v0.3 (msgpack and json)
