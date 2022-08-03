@@ -25,19 +25,19 @@ dist:
   #radical
   name: custom-collector
   output_path: "./bin"
-  otelcol_version: 0.54.0
+  otelcol_version: 0.56.0
 exporters:
   - import: go.opentelemetry.io/collector/exporter/otlpexporter
-    gomod: go.opentelemetry.io/collector v0.54.0
+    gomod: go.opentelemetry.io/collector v0.56.0
   - import: go.opentelemetry.io/collector/exporter/loggingexporter
-    gomod: go.opentelemetry.io/collector v0.54.0
+    gomod: go.opentelemetry.io/collector v0.56.0
 receivers:
   - import: go.opentelemetry.io/collector/receiver/otlpreceiver
-    gomod: go.opentelemetry.io/collector v0.54.0
+    gomod: go.opentelemetry.io/collector v0.56.0
   - gomod: "github.com/honeycombio/opentelemetry-collector-configs/datadogreceiver v0.1.0"
 processors:
   - import: go.opentelemetry.io/collector/processor/batchprocessor
-    gomod: go.opentelemetry.io/collector v0.54.0
+    gomod: go.opentelemetry.io/collector v0.56.0
 replaces:
 ```
 
