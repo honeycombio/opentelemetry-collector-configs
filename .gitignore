@@ -2,3 +2,7 @@
 /build/*
 /test/tmp-*
 /dist/*
+
+# GoLand IDEA
+/.idea/
+*.iml

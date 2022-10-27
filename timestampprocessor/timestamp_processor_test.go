@@ -3,27 +3,26 @@ package timestampprocessor
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/collector/pdata/pcommon"
+	"go.opentelemetry.io/collector/pdata/pmetric"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer/consumertest"
-	"go.opentelemetry.io/collector/model/pdata"
 )
 
 type metricTimestampTest struct {
 	name               string
 	roundToNearest     time.Duration
-	inMetrics          pdata.Metrics
+	inMetrics          pmetric.Metrics
 	expectedDataPoints []testDataPoint
 }
 
 type testDataPoint struct {
-	Timestamp pdata.Timestamp
+	Timestamp pcommon.Timestamp
 	Name      string
 }
 
@@ -192,8 +191,8 @@ func TestTimestampProcessor(t *testing.T) {
 	}
 }
 
-func testResourceMetrics(metricType string, dataPoints []testDataPoint) pdata.Metrics {
-	md := pdata.NewMetrics()
+func testResourceMetrics(metricType string, dataPoints []testDataPoint) pmetric.Metrics {
+	md := pmetric.NewMetrics()
 
 	for _, namedDataPoint := range dataPoints {
 		rm := md.ResourceMetrics().AppendEmpty()
@@ -203,26 +202,26 @@ func testResourceMetrics(metricType string, dataPoints []testDataPoint) pdata.Me
 
 		switch metricType {
 		case "gauge":
-			m.SetDataType(pdata.MetricDataTypeGauge)
+			m.SetEmptyGauge()
 			dp := m.Gauge().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
-			dp.SetIntVal(123)
+			dp.SetIntValue(123)
 
 		case "sum":
-			m.SetDataType(pdata.MetricDataTypeSum)
+			m.SetEmptySum()
 			dp := m.Sum().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
-			dp.SetIntVal(456)
+			dp.SetIntValue(456)
 
 		case "histogram":
-			m.SetDataType(pdata.MetricDataTypeHistogram)
+			m.SetEmptyHistogram()
 			dp := m.Histogram().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
 			dp.SetCount(6)
 			dp.SetSum(4.76)
 
 		case "summary":
-			m.SetDataType(pdata.MetricDataTypeSummary)
+			m.SetEmptySummary()
 			dp := m.Summary().DataPoints().AppendEmpty()
 			dp.SetTimestamp(namedDataPoint.Timestamp)
 			dp.SetCount(12)
@@ -233,7 +232,7 @@ func testResourceMetrics(metricType string, dataPoints []testDataPoint) pdata.Me
 	return md
 }
 
-func UnwrapMetricsList(wrappedMetricsList []pdata.Metrics) (metricObjects []pdata.Metric) {
+func UnwrapMetricsList(wrappedMetricsList []pmetric.Metrics) (metricObjects []pmetric.Metric) {
 	for _, wrappedMetrics := range wrappedMetricsList {
 
 		resourceMetrics := wrappedMetrics.ResourceMetrics()
@@ -254,28 +253,28 @@ func UnwrapMetricsList(wrappedMetricsList []pdata.Metrics) (metricObjects []pdat
 	return
 }
 
-func getDatapointListFromMetrics(metricsList []pdata.Metrics) (dataPointsToReturn []testDataPoint) {
+func getDatapointListFromMetrics(metricsList []pmetric.Metrics) (dataPointsToReturn []testDataPoint) {
 	for _, metric := range UnwrapMetricsList(metricsList) {
-		switch metric.DataType() {
-		case pdata.MetricDataTypeGauge:
+		switch metric.Type() {
+		case pmetric.MetricTypeGauge:
 			dataPoints := metric.Gauge().DataPoints()
 			for l := 0; l < dataPoints.Len(); l++ {
 				gotDataPoint := dataPoints.At(l)
 				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})
 			}
-		case pdata.MetricDataTypeSum:
+		case pmetric.MetricTypeSum:
 			dataPoints := metric.Sum().DataPoints()
 			for l := 0; l < dataPoints.Len(); l++ {
 				gotDataPoint := dataPoints.At(l)
 				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})
 			}
-		case pdata.MetricDataTypeHistogram:
+		case pmetric.MetricTypeHistogram:
 			dataPoints := metric.Histogram().DataPoints()
 			for l := 0; l < dataPoints.Len(); l++ {
 				gotDataPoint := dataPoints.At(l)
 				dataPointsToReturn = append(dataPointsToReturn, testDataPoint{gotDataPoint.Timestamp(), metric.Name()})
 			}
-		case pdata.MetricDataTypeSummary:
+		case pmetric.MetricTypeSummary:
 			dataPoints := metric.Summary().DataPoints()
 			for l := 0; l < dataPoints.Len(); l++ {
 				gotDataPoint := dataPoints.At(l)
@@ -287,14 +286,14 @@ func getDatapointListFromMetrics(metricsList []pdata.Metrics) (dataPointsToRetur
 }
 
 func TestNilResourceMetrics(t *testing.T) {
-	metrics := pdata.NewMetrics()
+	metrics := pmetric.NewMetrics()
 	rms := metrics.ResourceMetrics()
 	rms.AppendEmpty()
 	requireNotPanics(t, metrics)
 }
 
 func TestNilILM(t *testing.T) {
-	metrics := pdata.NewMetrics()
+	metrics := pmetric.NewMetrics()
 	rms := metrics.ResourceMetrics()
 	rm := rms.AppendEmpty()
 	ilms := rm.ScopeMetrics()
@@ -303,7 +302,7 @@ func TestNilILM(t *testing.T) {
 }
 
 func TestNilMetric(t *testing.T) {
-	metrics := pdata.NewMetrics()
+	metrics := pmetric.NewMetrics()
 	rms := metrics.ResourceMetrics()
 	rm := rms.AppendEmpty()
 	ilms := rm.ScopeMetrics()
@@ -313,7 +312,7 @@ func TestNilMetric(t *testing.T) {
 	requireNotPanics(t, metrics)
 }
 
-func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
+func requireNotPanics(t *testing.T, metrics pmetric.Metrics) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
 	pcfg := cfg.(*Config)
@@ -326,7 +325,7 @@ func requireNotPanics(t *testing.T, metrics pdata.Metrics) {
 		cfg,
 		consumertest.NewNop(),
 	)
-	require.NotPanics(t, func() {
+	assert.NotPanics(t, func() {
 		_ = proc.ConsumeMetrics(ctx, metrics)
 	})
 }
