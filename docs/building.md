@@ -20,5 +20,5 @@ dist:
 processors:
   - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.50.0"
   - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.50.0"
-  - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v0.4.0"
+  - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v1.4.0"
 ```
