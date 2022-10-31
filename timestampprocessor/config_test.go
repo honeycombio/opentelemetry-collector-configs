@@ -1,49 +1,59 @@
 package timestampprocessor
 
 import (
-	"path"
-	"testing"
-	"time"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/config"
-	"go.opentelemetry.io/collector/service/servicetest"
+	"go.opentelemetry.io/collector/confmap/confmaptest"
+	"path/filepath"
+	"testing"
+	"time"
 )
 
-// TestLoadingConfigRegexp tests loading testdata/config_strict.yaml
-func TestLoadingConfigStrict(t *testing.T) {
-	factories, err := componenttest.NopFactories()
-	assert.Nil(t, err)
-
-	factory := NewFactory()
-	factories.Processors[typeStr] = factory
-	cfg, err := servicetest.LoadConfigAndValidate(path.Join(".", "testdata", "config.yaml"), factories)
-
-	assert.Nil(t, err)
-	require.NotNil(t, cfg)
-
-	oneSecond := time.Second
+func TestLoadConfig(t *testing.T) {
+	t.Parallel()
 
 	tests := []struct {
-		filterID config.ComponentID
-		expCfg   *Config
+		id           config.ComponentID
+		expected     config.Processor
+		errorMessage string
 	}{
 		{
-			filterID: config.NewComponentIDWithName("timestamp", "1sec"),
-			expCfg: &Config{
-				ProcessorSettings: config.NewProcessorSettings(config.NewComponentIDWithName(typeStr, "1sec")),
-				RoundToNearest:    &oneSecond,
+			id: config.NewComponentIDWithName(typeStr, ""),
+			expected: &Config{
+				ProcessorSettings: config.NewProcessorSettings(config.NewComponentID(typeStr)),
+				RoundToNearest:    getTimeDuration("1s"),
 			},
+		},
+		{
+			id:           config.NewComponentIDWithName(typeStr, "missing_round_to_nearest"),
+			errorMessage: "missing required field \"round_to_nearest\"",
 		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.filterID.String(), func(t *testing.T) {
-			cfg := cfg.Processors[test.filterID]
-			assert.Equal(t, test.expCfg, cfg)
+	for _, tt := range tests {
+		t.Run(tt.id.String(), func(t *testing.T) {
+			cm, err := confmaptest.LoadConf(filepath.Join("testdata", "config.yaml"))
+			require.NoError(t, err)
+
+			factory := NewFactory()
+			cfg := factory.CreateDefaultConfig()
+
+			sub, err := cm.Sub(tt.id.String())
+			require.NoError(t, err)
+			require.NoError(t, config.UnmarshalProcessor(sub, cfg))
+
+			if tt.expected == nil {
+				assert.EqualError(t, cfg.Validate(), tt.errorMessage)
+				return
+			}
+			assert.NoError(t, cfg.Validate())
+			assert.Equal(t, tt.expected, cfg)
 		})
 	}
+}
+
+func getTimeDuration(timeDurationStr string) *time.Duration {
+	timeDuration, _ := time.ParseDuration(timeDurationStr)
+	return &timeDuration
 }

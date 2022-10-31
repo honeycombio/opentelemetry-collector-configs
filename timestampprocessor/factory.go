@@ -2,8 +2,6 @@ package timestampprocessor
 
 import (
 	"context"
-	"fmt"
-
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer"
@@ -12,7 +10,8 @@ import (
 
 const (
 	// The value of "type" key in configuration.
-	typeStr = "timestamp"
+	typeStr   = "timestamp"
+	stability = component.StabilityLevelBeta
 )
 
 var processorCapabilities = consumer.Capabilities{MutatesData: true}
@@ -22,7 +21,7 @@ func NewFactory() component.ProcessorFactory {
 	return component.NewProcessorFactory(
 		typeStr,
 		createDefaultConfig,
-		component.WithMetricsProcessor(createMetricsProcessor))
+		component.WithMetricsProcessor(createMetricsProcessor, stability))
 }
 
 func createDefaultConfig() config.Processor {
@@ -32,20 +31,21 @@ func createDefaultConfig() config.Processor {
 }
 
 func createMetricsProcessor(
-	_ context.Context,
+	ctx context.Context,
 	set component.ProcessorCreateSettings,
 	cfg config.Processor,
 	nextConsumer consumer.Metrics,
 ) (component.MetricsProcessor, error) {
 	oCfg := cfg.(*Config)
-	if oCfg.RoundToNearest == nil {
-		return nil, fmt.Errorf("error creating \"timestamp\" processor due to missing required field \"round_to_nearest\" of processor %v", cfg.ID())
-	}
-	timestampProcessor, err := newTimestampMetricProcessor(set.Logger, cfg.(*Config))
+
+	timestampProcessor, err := newTimestampMetricProcessor(set.Logger, oCfg)
+
 	if err != nil {
 		return nil, err
 	}
 	return processorhelper.NewMetricsProcessor(
+		ctx,
+		set,
 		cfg,
 		nextConsumer,
 		timestampProcessor.processMetrics,
