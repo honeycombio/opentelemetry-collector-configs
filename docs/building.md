@@ -18,7 +18,7 @@ dist:
   include_core: true
   otelcol_version: "0.63.1"
 processors:
-  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.63.1"
-  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.63.1"
+  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.63.0"
+  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.63.0"
   - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v1.4.0"
 ```
