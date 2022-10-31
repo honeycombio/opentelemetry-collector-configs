@@ -16,9 +16,9 @@ Here is a configuration for the builder that will include the `metricstransform`
 dist:
   module: github.com/open-telemetry/opentelemetry-collector-builder
   include_core: true
-  otelcol_version: "0.50.0"
+  otelcol_version: "0.63.1"
 processors:
-  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.50.0"
-  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.50.0"
+  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.63.0"
+  - gomod: "github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.63.0"
   - gomod: "github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v1.4.0"
 ```
