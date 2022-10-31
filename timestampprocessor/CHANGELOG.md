@@ -1,3 +1,17 @@
+# Release v1.5.0 (2022-10-31)
+
+### Changed
+
+- updated CI base container from `honeycombio/cci-go-yq:0.0.5` to `honeycombio/cci-go-yq:0.0.7`
+
+### Dependencies
+
+- Bump github.com/stretchr/testify from v1.7.1 to v1.8.1
+- Bump go.opentelemetry.io/collector from v0.50.0 to v0.63.1
+- Replace go.opentelemetry.io/collector/model with go.opentelemetry.io/collector/pdata 
+- Bump to go.uber.org/zap from v1.21.0 to v1.23.0
+
+
 # Release v1.4.0 (2022-05-10)
 
 ### Changed
