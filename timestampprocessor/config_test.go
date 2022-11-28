@@ -3,6 +3,7 @@ package timestampprocessor
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/confmap/confmaptest"
 	"path/filepath"
@@ -14,19 +15,19 @@ func TestLoadConfig(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		id           config.ComponentID
-		expected     config.Processor
+		id           component.ID
+		expected     component.ProcessorConfig
 		errorMessage string
 	}{
 		{
-			id: config.NewComponentIDWithName(typeStr, ""),
+			id: component.NewIDWithName(typeStr, ""),
 			expected: &Config{
-				ProcessorSettings: config.NewProcessorSettings(config.NewComponentID(typeStr)),
+				ProcessorSettings: config.NewProcessorSettings(component.NewID(typeStr)),
 				RoundToNearest:    getTimeDuration("1s"),
 			},
 		},
 		{
-			id:           config.NewComponentIDWithName(typeStr, "missing_round_to_nearest"),
+			id:           component.NewIDWithName(typeStr, "missing_round_to_nearest"),
 			errorMessage: "missing required field \"round_to_nearest\"",
 		},
 	}
@@ -41,13 +42,13 @@ func TestLoadConfig(t *testing.T) {
 
 			sub, err := cm.Sub(tt.id.String())
 			require.NoError(t, err)
-			require.NoError(t, config.UnmarshalProcessor(sub, cfg))
+			require.NoError(t, component.UnmarshalProcessorConfig(sub, cfg))
 
 			if tt.expected == nil {
-				assert.EqualError(t, cfg.Validate(), tt.errorMessage)
+				assert.EqualError(t, component.ValidateConfig(cfg), tt.errorMessage)
 				return
 			}
-			assert.NoError(t, cfg.Validate())
+			assert.NoError(t, component.ValidateConfig(cfg))
 			assert.Equal(t, tt.expected, cfg)
 		})
 	}
