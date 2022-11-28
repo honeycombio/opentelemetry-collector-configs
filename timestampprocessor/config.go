@@ -2,6 +2,7 @@ package timestampprocessor
 
 import (
 	"fmt"
+	"go.opentelemetry.io/collector/component"
 	"time"
 
 	"go.opentelemetry.io/collector/config"
@@ -14,7 +15,7 @@ type Config struct {
 	RoundToNearest *time.Duration `mapstructure:"round_to_nearest"`
 }
 
-var _ config.Processor = (*Config)(nil)
+var _ component.ProcessorConfig = (*Config)(nil)
 
 // Validate checks if the processor configuration is valid
 func (cfg *Config) Validate() error {
