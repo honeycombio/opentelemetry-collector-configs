@@ -1,3 +1,16 @@
+# Release v1.6.0 (2022-11-29)
+
+### Changed
+
+- updated CI base container from `honeycombio/cci-go-yq:0.0.7` to `honeycombio/cci-go-yq:0.0.8`
+- add PR title validation workflow
+
+### Dependencies
+
+- Bump go.opentelemetry.io/collector from v0.63.1 to v0.66.0
+- Use go.opentelemetry.io/collector/component instead of go.opentelemetry.io/collector/config where appropriate
+
+
 # Release v1.5.0 (2022-10-31)
 
 ### Changed
