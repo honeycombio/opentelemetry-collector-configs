@@ -30,17 +30,3 @@ If you'd like to build a version of the configuration yourself, clone this repo 
 Watch updates and rebuild on changes using [`entr`](http://eradman.com/entrproject/) with `ls | entr make`.
 
 Simulate what's happening in CircleCI with: `docker run -it --mount=type=bind,source="$(pwd)",target=/home/circleci/project honeycombio/cci-go-yq /bin/bash`
-
-## Releasing
-
-Aside from the dependencies above you will also need the following:
-
-- [docker](https://docs.docker.com/get-docker/)
-- [fpm](https://fpm.readthedocs.io/en/v1.13.1/installing.html)
-- [gh](https://github.com/cli/cli#installation)
-
-Make sure you have committed all code and are on an appropriate branch, then run:
-
-```bash
-./release.sh
-```
