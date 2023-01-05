@@ -3,15 +3,13 @@ package timestampprocessor
 import (
 	"context"
 	"fmt"
-	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/pmetric"
+	"go.opentelemetry.io/collector/processor/processortest"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"go.opentelemetry.io/collector/component/componenttest"
-	"go.opentelemetry.io/collector/config"
 	"go.opentelemetry.io/collector/consumer/consumertest"
 )
 
@@ -156,13 +154,12 @@ func TestTimestampProcessor(t *testing.T) {
 			// next stores the results of the filter metric processor
 			next := new(consumertest.MetricsSink)
 			cfg := &Config{
-				ProcessorSettings: config.NewProcessorSettings(component.NewID(typeStr)),
-				RoundToNearest:    &test.roundToNearest,
+				RoundToNearest: &test.roundToNearest,
 			}
 			factory := NewFactory()
 			fmp, err := factory.CreateMetricsProcessor(
 				context.Background(),
-				componenttest.NewNopProcessorCreateSettings(),
+				processortest.NewNopCreateSettings(),
 				cfg,
 				next,
 			)
@@ -322,7 +319,7 @@ func requireNotPanics(t *testing.T, metrics pmetric.Metrics) {
 	ctx := context.Background()
 	proc, _ := factory.CreateMetricsProcessor(
 		ctx,
-		componenttest.NewNopProcessorCreateSettings(),
+		processortest.NewNopCreateSettings(),
 		cfg,
 		consumertest.NewNop(),
 	)
