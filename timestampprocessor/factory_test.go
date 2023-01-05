@@ -5,11 +5,10 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/consumer/consumertest"
+	"go.opentelemetry.io/collector/processor/processortest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	"go.opentelemetry.io/collector/config"
 )
 
 func TestType(t *testing.T) {
@@ -22,9 +21,7 @@ func TestType(t *testing.T) {
 func TestCreateDefaultConfig(t *testing.T) {
 	factory := NewFactory()
 	cfg := factory.CreateDefaultConfig()
-	assert.Equal(t, cfg, &Config{
-		ProcessorSettings: config.NewProcessorSettings(component.NewID(typeStr)),
-	})
+	assert.Equal(t, cfg, &Config{})
 	assert.NoError(t, componenttest.CheckConfigStruct(cfg))
 }
 
@@ -34,7 +31,7 @@ func TestCreateMetricsProcessor(t *testing.T) {
 	oCfg := cfg.(*Config)
 	oCfg.RoundToNearest = getTimeDuration("1s")
 
-	mp, err := factory.CreateMetricsProcessor(context.Background(), componenttest.NewNopProcessorCreateSettings(), cfg, consumertest.NewNop())
+	mp, err := factory.CreateMetricsProcessor(context.Background(), processortest.NewNopCreateSettings(), cfg, consumertest.NewNop())
 	assert.NotNil(t, mp)
 	assert.NoError(t, err)
 }
