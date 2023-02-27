@@ -160,7 +160,7 @@ flatten(2) |
       }
     },
     "logging": {
-      "logLevel": ($ENV.LOG_LEVEL // "info")
+      "loglevel": ($ENV.LOG_LEVEL // "info")
     }
   },
   "receivers": {
