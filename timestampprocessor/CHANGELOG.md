@@ -1,3 +1,12 @@
+# Release v1.7.0 (2023-03-13)
+
+### Dependencies
+
+- Bump to 0.73.0 (#68) | @TylerHelmuth
+- Update builder config gomods (#57) | @TylerHelmuth
+- chore: Bump collector dependencies (#56) | @TylerHelmuth
+- chore: Remove need for dockerfile (#50) | @TylerHelmuth
+
 # Release v1.6.0 (2022-11-29)
 
 ### Changed
