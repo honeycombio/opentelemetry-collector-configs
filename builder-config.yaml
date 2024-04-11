@@ -1,28 +1,27 @@
 dist:
   module: github.com/honeycombio/opentelemetry-collector-configs
   description: "OpenTelemetry Collector for Honeycomb"
-  otelcol_version: "0.73.0"
+  otelcol_version: "0.98.0"
   output_path: build
 receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kubeletstatsreceiver v0.73.0
+  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/hostmetricsreceiver v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/receiver/kubeletstatsreceiver v0.98.0
 extensions:
-  - gomod: go.opentelemetry.io/collector/extension/zpagesextension v0.73.0
-  - gomod: go.opentelemetry.io/collector/extension/ballastextension v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/pprofextension v0.73.0
+  - gomod: go.opentelemetry.io/collector/extension/zpagesextension v0.98.0
+  - gomod: go.opentelemetry.io/collector/extension/ballastextension v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/pprofextension v0.98.0
 exporters:
-  - gomod: go.opentelemetry.io/collector/exporter/loggingexporter v0.73.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.73.0
-  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.73.0
+  - gomod: go.opentelemetry.io/collector/exporter/loggingexporter v0.98.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.98.0
+  - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.98.0
   # file exporter needed for integration tests to run
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.73.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.98.0
 processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.73.0
-  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.73.0
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.73.0
-  - gomod: github.com/honeycombio/opentelemetry-collector-configs/timestampprocessor v0.0.0
-    path: ./timestampprocessor
+  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.98.0
+  - gomod: go.opentelemetry.io/collector/processor/memorylimiterprocessor v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/metricstransformprocessor v0.98.0
+  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.98.0

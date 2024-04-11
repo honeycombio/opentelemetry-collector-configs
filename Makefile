@@ -26,15 +26,11 @@ release:
 	(cd dist && shasum -a 256 * > checksums.txt)
 
 .PHONY: test
-test: go_test integration_test
+test: integration_test
 
 .PHONY: integration_test
 integration_test: test/test.sh build/otelcol_hny_$(GOOS)_$(GOARCH) artifacts/honeycomb-metrics-config.yaml
 	./test/test.sh
-
-.PHONY: go_test
-go_test:
-	(cd ./timestampprocessor && go test .)
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml

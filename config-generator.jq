@@ -182,8 +182,16 @@ flatten(2) |
     "resourcedetection": {
       "detectors": ["env", "system"]
     },
-    "timestamp": {
-      "round_to_nearest": "1s"
+    "transform": {
+      "error_mode": "ignore",
+      "metric_statements": [
+        {
+          "context": "datapoint",
+          "statements": [
+            "set(time, TruncateTime(time, Duration(\"1s\")))"
+          ]
+        }
+      ]
     },
     "batch": {
       "send_batch_size": 8192,
@@ -208,7 +216,7 @@ flatten(2) |
     "pipelines": {
       "metrics": {
         "receivers": ["hostmetrics"],
-        "processors": ["metricstransform", "filter", "timestamp", "resourcedetection", "batch"],
+        "processors": ["metricstransform", "filter", "transform", "resourcedetection", "batch"],
         "exporters": ["logging", "otlp"]
       }
     }

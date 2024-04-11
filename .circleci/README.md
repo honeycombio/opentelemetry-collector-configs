@@ -1,3 +1,3 @@
-# Timestamp Processor Build
+# Collector Test Build
 
-Whenever bumping the collector libraries the version for `OTC_BUILDER_VERSION` within the `config.yaml` must be updated to match the collector library version.
+The `OTC_BUILDER_VERSION` and `builder-config.yaml` collector versions must match.
