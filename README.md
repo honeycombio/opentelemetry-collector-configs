@@ -14,10 +14,6 @@ A current version of the config that this repository generates should be availab
 
 In order to use this configuration you will need a version of opentelemetry-collector that contains the `metricstransform` processor and the `timestamp` processor. Binaries for those processors should also be available on the [Releases page](https://github.com/honeycombio/opentelemetry-collector-configs/releases). However, if you would like to build your own binary, [refer to this documentation](./docs/building.md).
 
-## Timestamp processor
-
-This repository contains [code for a `timestamp` processor for OpenTelemetry Collector](./timestampprocessor), which allows rounding timestamps in metrics streams to a configurable value.
-
 ## Building the config
 
 If you'd like to build a version of the configuration yourself, clone this repo and run `make config`. You'll need these prerequisites available in your `$PATH`:

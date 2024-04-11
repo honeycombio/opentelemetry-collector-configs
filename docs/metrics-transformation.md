@@ -327,17 +327,21 @@ Granularity to the nanosecond is not particularly helpful for the vast majority 
 
 We address this by modifying timestamps for all metrics received in a batch by rounding them down to the most recent second. In this example, all timestamps would end up getting set to `1626298669000000000`. If, for some reason, the timestamps in a batch varied by more than 1 second, we would still retain that variability at up to a 1-second granularity.
 
-This transformation can be accomplished by using the `timestampprocessor`, which [currently lives in this repository](../timestampprocessor) but we're working on getting it merged into the official [opentelemetry-collector-contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib) repository instead. It can be configured like this:
+This transformation can be accomplished by using the `transformprocessor`, which [lives in contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/transformprocessor). It can be configured like this:
 
 ```yaml
 processors:
-  timestamp:
-    round_to_nearest: 1s
+    transform:
+      error_mode: ignore
+      metric_statements:
+        - context: datapoint
+          statements:
+            - set(time, TruncateTime(time, Duration("1s")))
 
 service:
   pipelines:
     metrics:
       receivers: [hostmetrics]
-      processors: [timestamp]
+      processors: [transform]
       exporters: [otlp]
 ```

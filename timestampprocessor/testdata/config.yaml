@@ -1,4 +1,0 @@
-timestamp:
-  round_to_nearest: 1s
-
-timestamp/missing_round_to_nearest:
