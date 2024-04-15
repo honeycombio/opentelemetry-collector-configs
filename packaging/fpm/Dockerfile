@@ -1,9 +1,9 @@
-FROM debian:9
+FROM debian:12
 
-RUN apt-get update && \
-    apt-get install -y ruby ruby-dev rubygems build-essential git rpm
+RUN apt-get update
+RUN apt-get install -y ruby ruby-dev rubygems build-essential git rpm
 
-RUN gem install --no-document fpm -v 1.11.0
+RUN gem install --no-document fpm -v 1.15.1
 
 VOLUME /repo
 WORKDIR /repo
