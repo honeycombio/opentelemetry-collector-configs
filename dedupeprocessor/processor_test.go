@@ -15,23 +15,59 @@ import (
 )
 
 func TestProcessLogsDeduplicate(t *testing.T) {
-	factory := NewFactory()
-	cfg := factory.CreateDefaultConfig()
-	oCfg := cfg.(*Config)
+	testCases := []struct {
+		name         string
+		inputFile    string
+		expectedFile string
+	}{
+		{
+			name:         "different record attrs",
+			inputFile:    "attrs.yaml",
+			expectedFile: "attrs-expected.yaml",
+		},
+		{
+			name:         "different log level",
+			inputFile:    "log-level.yaml",
+			expectedFile: "log-level-expected.yaml",
+		},
+		{
+			name:         "different log body",
+			inputFile:    "log-body.yaml",
+			expectedFile: "log-body-expected.yaml",
+		},
+		{
+			name:         "different resource attrs",
+			inputFile:    "resource-attrs.yaml",
+			expectedFile: "resource-attrs-expected.yaml",
+		},
+		{
+			name:         "different scope attrs",
+			inputFile:    "scope-attrs.yaml",
+			expectedFile: "scope-attrs-expected.yaml",
+		},
+	}
 
-	sink := new(consumertest.LogsSink)
-	p, err := factory.CreateLogsProcessor(context.Background(), processortest.NewNopSettings(), oCfg, sink)
-	require.NoError(t, err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			factory := NewFactory()
+			cfg := factory.CreateDefaultConfig()
+			oCfg := cfg.(*Config)
 
-	input, err := golden.ReadLogs(filepath.Join("testdata", "logs.yaml"))
-	require.NoError(t, err)
-	expected, err := golden.ReadLogs(filepath.Join("testdata", "logs-expected.yaml"))
-	require.NoError(t, err)
+			sink := new(consumertest.LogsSink)
+			p, err := factory.CreateLogsProcessor(context.Background(), processortest.NewNopSettings(), oCfg, sink)
+			require.NoError(t, err)
 
-	assert.NoError(t, p.ConsumeLogs(context.Background(), input))
+			input, err := golden.ReadLogs(filepath.Join("testdata", tc.inputFile))
+			require.NoError(t, err)
+			expected, err := golden.ReadLogs(filepath.Join("testdata", tc.expectedFile))
+			require.NoError(t, err)
 
-	actual := sink.AllLogs()
-	require.Len(t, actual, 1)
+			assert.NoError(t, p.ConsumeLogs(context.Background(), input))
 
-	assert.NoError(t, plogtest.CompareLogs(expected, actual[0]))
+			actual := sink.AllLogs()
+			require.Len(t, actual, 1)
+
+			assert.NoError(t, plogtest.CompareLogs(expected, actual[0]))
+		})
+	}
 }

@@ -1,21 +1,23 @@
 resourceLogs:
-  # same resource, scope and log -- should dedupe
   - resource:
       attributes:
         - key: resource.required
           value:
             stringValue: foo
-        - key: resource.optional
-          value:
-            stringValue: bar
     scopeLogs:
-      - logRecords:
+      - scope:
+          attributes:
+            - key: scope.required
+              value:
+                stringValue: foo
+        logRecords:
           - attributes:
               - key: log.required
                 value:
                   stringValue: foo
             body:
               stringValue: This is a log message
+            severityText: "INFO"
             spanId: ""
             timeUnixNano: "1581452773000000789"
             traceId: ""
@@ -25,6 +27,7 @@ resourceLogs:
                   stringValue: foo
             body:
               stringValue: This is a log message
+            severityText: "INFO"
             spanId: ""
             timeUnixNano: "1581452773000000789"
             traceId: ""
@@ -34,7 +37,17 @@ resourceLogs:
                   stringValue: foo
             body:
               stringValue: This is a log message
+            severityText: "ERROR"
             spanId: ""
             timeUnixNano: "1581452773000000789"
             traceId: ""
-  # same resource, scope and log -- should dedupe
+          - attributes:
+              - key: log.required
+                value:
+                  stringValue: foo
+            body:
+              stringValue: This is a log message
+            severityText: "ERROR"
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""

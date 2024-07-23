@@ -1,0 +1,33 @@
+resourceLogs:
+  - resource:
+      attributes:
+        - key: resource.required
+          value:
+            stringValue: foo
+    scopeLogs:
+      - scope:
+          attributes:
+            - key: scope.required
+              value:
+                stringValue: foo
+        logRecords:
+          - attributes:
+              - key: log.required
+                value:
+                  stringValue: foo
+            body:
+              stringValue: This is a log message
+            severityText: "INFO"
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""
+          - attributes:
+              - key: log.required
+                value:
+                  stringValue: foo
+            body:
+              stringValue: This is a log message
+            severityText: "ERROR"
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""
