@@ -1,0 +1,28 @@
+type: dedupe
+scope_name: otelcol/dedupe
+
+status:
+  class: processor
+  stability:
+    development: [logs]
+  distributions: []
+  warnings: []
+  codeowners:
+    active: [MikeGoldsmith, codeboten]
+
+tests:
+  config:
+  goleak:
+    ignore:
+      top:
+        - "github.com/hashicorp/golang-lru/v2/expirable.NewLRU[...].func1"
+
+telemetry:
+  metrics:
+    dedupeprocessor_dropped:
+      description: Number of dropped log events
+      unit: "1"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true

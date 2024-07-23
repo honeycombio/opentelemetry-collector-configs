@@ -1,0 +1,20 @@
+resourceLogs:
+  - resource:
+      attributes:
+        - key: resource.required
+          value:
+            stringValue: foo
+        - key: resource.optional
+          value:
+            stringValue: bar
+    scopeLogs:
+      - logRecords:
+          - attributes:
+              - key: log.required
+                value:
+                  stringValue: foo
+            body:
+              stringValue: This is a log message
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""
