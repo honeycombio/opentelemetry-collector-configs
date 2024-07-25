@@ -1,6 +1,7 @@
 VERSION?=1.0.1
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
+OCB?= ocb
 
 .PHONY: all
 all: config collector-bin collector-dist
@@ -59,7 +60,7 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	ocb --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
+	$(OCB) --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
