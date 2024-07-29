@@ -1,4 +1,26 @@
 version: 2.1
+commands:
+  setup_googleko:
+    steps:
+      - restore_cache:
+          keys:
+            - v1-googleko
+      # we're pinning to ko 11.2 because it v0.12 can't push to ecr
+      - run: go install github.com/google/ko@v0.11.2
+      - save_cache:
+          key: v1-googleko
+          paths:
+            - /home/circleci/go/pkg/mod/
+  setup_ocb:
+    steps:
+      - restore_cache:
+          keys:
+            - v0-ocb
+      - run: go install go.opentelemetry.io/collector/cmd/builder@v0.106.0
+      - save_cache:
+          key: v0-ocb
+          paths:
+            - /home/circleci/go/pkg/mod/
 jobs:
   build:
     working_directory: ~/repo
@@ -48,3 +70,28 @@ jobs:
           paths: build
       - store_artifacts:
           path: /tmp/images
+  publish_docker_to_ecr:
+    docker:
+      - image: cimg/go:1.21
+    steps:
+      - setup_googleko
+      - setup_googleko
+      - checkout
+      - setup_remote_docker
+      - aws-cli/setup:
+          role-arn: "arn:aws:iam::702835727665:role/circleci-public-repos"
+          role-session-name: "hc-logging-distro"
+          aws-region: AWS_REGION
+      - run:
+          name: publish docker image to aws ecr
+          command: |
+            set -x
+
+            export ECR_HOST=702835727665.dkr.ecr.us-east-1.amazonaws.com
+            export KO_DOCKER_REPO=${ECR_HOST}
+
+            OCB=builder make build-binary-internal
+
+            aws ecr get-login-password --region us-east-1 \
+              | docker login --username AWS --password-stdin "${ECR_HOST}"
+            cd build && ./build-docker.sh

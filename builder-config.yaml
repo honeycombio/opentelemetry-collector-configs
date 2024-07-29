@@ -1,5 +1,5 @@
 dist:
-  module: github.com/open-telemetry/opentelemetry-collector-releases/core
+  module: github.com/honeycombio/opentelemetry-collector-configs
   name: otelcol
   description: OpenTelemetry Collector Logging Test Distro
   version: 0.104.0
