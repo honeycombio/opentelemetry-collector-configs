@@ -22,6 +22,7 @@ jobs:
       - image: cimg/go:1.21
     steps:
       - checkout
+      - setup_googleko
       - restore_cache:
           keys:
             - builder-config-{{ checksum "builder-config.yaml" }}
