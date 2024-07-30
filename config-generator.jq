@@ -155,12 +155,12 @@ flatten(2) |
       # $ENV pulls from the environment when the generator is running; // provides a "default" value:
       "endpoint": ($ENV.OTLP_ENDPOINT // "api.honeycomb.io:443"),
       "headers": {
-        "x-honeycomb-team": "$HNY_API_KEY",
-        "x-honeycomb-dataset": "$HNY_DATASET",
+        "x-honeycomb-team": "${env:HNY_API_KEY}",
+        "x-honeycomb-dataset": "${env:HNY_DATASET}",
       }
     },
-    "logging": {
-      "loglevel": ($ENV.LOG_LEVEL // "info")
+    "debug": {
+      "verbosity": ($ENV.LOG_LEVEL // "normal")
     }
   },
   "receivers": {
@@ -217,7 +217,7 @@ flatten(2) |
       "metrics": {
         "receivers": ["hostmetrics"],
         "processors": ["metricstransform", "filter", "transform", "resourcedetection", "batch"],
-        "exporters": ["logging", "otlp"]
+        "exporters": ["debug", "otlp"]
       }
     }
   }
