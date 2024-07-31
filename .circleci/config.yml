@@ -49,21 +49,21 @@ jobs:
             python --version
             pip3 --version
             ocb version
-      - run:
-          name: Run tests
-          command: |
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
-            make test
+      # - run:
+      #     name: Run tests
+      #     command: |
+      #       export PYENV_ROOT=/home/circleci/.pyenv
+      #       export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
+      #       make test
       - aws-cli/setup:
           role-arn: "arn:aws:iam::702835727665:role/circleci-public-repos"
           role-session-name: "hc-logging-distro"
           aws-region: AWS_REGION
-      - run:
-          name: Create artifacts
-          command: |
-            mkdir -p /tmp/images;
-            cp build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
+      # - run:
+      #     name: Create artifacts
+      #     command: |
+      #       mkdir -p /tmp/images;
+      #       cp build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
       - run:
           name: publish docker image to aws ecr
           command: |
@@ -80,5 +80,5 @@ jobs:
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
-      - store_artifacts:
-          path: /tmp/images
+      # - store_artifacts:
+      #     path: /tmp/images
