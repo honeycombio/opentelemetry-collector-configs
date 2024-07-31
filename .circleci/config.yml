@@ -23,6 +23,7 @@ jobs:
     steps:
       - checkout
       - setup_googleko
+      - setup_remote_docker
       - restore_cache:
           keys:
             - builder-config-{{ checksum "builder-config.yaml" }}
