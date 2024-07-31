@@ -51,6 +51,6 @@ connectors:
   - gomod: go.opentelemetry.io/collector/connector/forwardconnector v0.106.0
 
 replaces:
-  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dedupeprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/dedupeprocessor v0.0.0-20240729145844-e5f4638ad57a
+  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dedupeprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/dedupeprocessor v0.0.0-20240731115535-50f36a19b1df
   - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor => github.com/cartermp/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.0.0-20240715031308-37637b9073ae
-  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/reduceprocessor v0.0.0-20240726180512-9f9c31c2de10
+  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/reduceprocessor v0.0.0-20240731145554-70ec363f2d83
