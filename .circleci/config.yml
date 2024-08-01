@@ -58,6 +58,8 @@ jobs:
           command: |
             set -x
 
+            echo "TAG=$(sed 's/@//' <<< $CIRCLE_TAG | sed 's/\//-/' | sed 's/@/./')" >> $BASH_ENV
+            source $BASH_ENV
             export ECR_HOST=702835727665.dkr.ecr.us-east-1.amazonaws.com
 
             # Create a parallel multi-platform builder
@@ -69,7 +71,6 @@ jobs:
               | docker login --username AWS --password-stdin "${ECR_HOST}"
 
             # Build for multiple platforms
-            export TAG=$(sed 's/@//' <<< $CIRCLE_TAG | sed 's/\//-/' | sed 's/@/./')
             docker build --platform linux/arm64 --push -t ${ECR_HOST}/hc-logging-distro:${TAG} .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
