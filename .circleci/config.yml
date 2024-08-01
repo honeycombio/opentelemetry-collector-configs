@@ -3,18 +3,6 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@3.2.0
 
-commands:
-  setup_googleko:
-    steps:
-      - restore_cache:
-          keys:
-            - v1-googleko
-      # we're pinning to ko 11.2 because it v0.12 can't push to ecr
-      - run: go install github.com/google/ko@v0.11.2
-      - save_cache:
-          key: v1-googleko
-          paths:
-            - /home/circleci/go/pkg/mod/
 jobs:
   build:
     working_directory: ~/repo
@@ -22,7 +10,6 @@ jobs:
       - image: cimg/go:1.21
     steps:
       - checkout
-      - setup_googleko
       - setup_remote_docker
       - restore_cache:
           keys:
@@ -78,7 +65,7 @@ jobs:
             aws ecr get-login-password --region us-east-1 \
               | docker login --username AWS --password-stdin "${ECR_HOST}"
 
-            docker build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
+            docker buildx build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
