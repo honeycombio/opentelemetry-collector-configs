@@ -3,7 +3,7 @@ FROM golang:1.21 AS build
 WORKDIR /go/src
 ADD ./build ./
 
-RUN go build -o otelcol-hny ./...  
+RUN CGO_ENABLED=0 go build -o otelcol-hny ./...  
 
 FROM alpine:3.19 AS certs
 RUN apk --update add ca-certificates
