@@ -1,5 +1,5 @@
 /artifacts/*
-/build/*
+/build/otelcol_hny*
 /test/tmp-*
 /dist/*
 

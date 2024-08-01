@@ -60,12 +60,15 @@ jobs:
             export ECR_HOST=702835727665.dkr.ecr.us-east-1.amazonaws.com
             export KO_DOCKER_REPO=${ECR_HOST}
 
-            OCB=ocb make build-binary-internal
-
             aws ecr get-login-password --region us-east-1 \
               | docker login --username AWS --password-stdin "${ECR_HOST}"
 
-            docker buildx build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
+            # Create a parallel multi-platform builder
+            docker buildx create --name mybuilder --use
+            # Make "buildx" the default
+            docker buildx install
+            # Build for multiple platforms
+            docker build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
