@@ -77,7 +77,8 @@ jobs:
 
             aws ecr get-login-password --region us-east-1 \
               | docker login --username AWS --password-stdin "${ECR_HOST}"
-            cd build && ../build-docker.sh
+
+            docker build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
