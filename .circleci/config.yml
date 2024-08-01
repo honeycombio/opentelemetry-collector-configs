@@ -69,7 +69,7 @@ jobs:
               | docker login --username AWS --password-stdin "${ECR_HOST}"
 
             # Build for multiple platforms
-            TAG=$(sed 's/@//' <<< $CIRCLE_TAG | sed 's/\//-/' | sed 's/@/./')
+            export TAG=$(sed 's/@//' <<< $CIRCLE_TAG | sed 's/\//-/' | sed 's/@/./')
             docker build --platform linux/arm64 --push -t ${ECR_HOST}/hc-logging-distro:${TAG} .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
