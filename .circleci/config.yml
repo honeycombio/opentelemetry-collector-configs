@@ -69,7 +69,7 @@ jobs:
             # Make "buildx" the default
             docker buildx install
             # Build for multiple platforms
-            docker build --platform linux/arm64,linux/amd64 --push -t hc-logging-distro .
+            docker build --platform linux/arm64 --push -t hc-logging-distro .
       - save_cache:
           key: builder-config-{{ checksum "builder-config.yaml" }}
           paths: build
