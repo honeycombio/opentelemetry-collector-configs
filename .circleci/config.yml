@@ -64,6 +64,7 @@ jobs:
             docker buildx create --name mybuilder --use
             # Make "buildx" the default
             docker buildx install
+            OCB=ocb make build-binary-internal
 
             aws ecr get-login-password --region us-east-1 \
               | docker login --username AWS --password-stdin "${ECR_HOST}"
