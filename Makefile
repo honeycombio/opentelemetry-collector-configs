@@ -60,7 +60,7 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	$(OCB) --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
+	$(OCB) --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml $(OCB_OPTS)
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
