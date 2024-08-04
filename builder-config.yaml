@@ -54,4 +54,4 @@ connectors:
 replaces:
   - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dedupeprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/dedupeprocessor v0.0.0-20240802133347-4541708645f0
   - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor => github.com/cartermp/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.0.0-20240715031308-37637b9073ae
-  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/reduceprocessor v0.0.0-20240802112143-d3effd11a89e
+  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/reduceprocessor v0.0.0-20240804145133-5f35d061b143
