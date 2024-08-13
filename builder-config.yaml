@@ -45,7 +45,6 @@ processors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/probabilisticsamplerprocessor v0.107.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.107.0
   # custom processors below this line
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/dedupeprocessor v0.107.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.107.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor v0.107.0
 
