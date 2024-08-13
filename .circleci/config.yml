@@ -18,7 +18,7 @@ jobs:
       - run:
           name: install dependencies
           environment:
-            OTC_BUILDER_VERSION: 0.104.0
+            OTC_BUILDER_VERSION: 0.107.0
             PYTHON_VERSION: 3.9
           command: |
             sudo apt-get update -qq
