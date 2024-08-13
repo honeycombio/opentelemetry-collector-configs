@@ -33,7 +33,7 @@ jobs:
             export GOARCH=$(go env GOARCH)
             export GOOS=$(go env GOOS)
             mkdir -p /home/circleci/bin
-            curl -sLo /home/circleci/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
+            curl -sLo /home/circleci/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
             chmod u+x /home/circleci/bin/ocb
             python --version
             pip3 --version
