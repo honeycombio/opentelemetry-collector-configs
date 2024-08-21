@@ -1,0 +1,33 @@
+resourceLogs:
+  - resource:
+      attributes:
+        - key: resource.required
+          value:
+            stringValue: foo
+    scopeLogs:
+      - scope:
+          attributes:
+            - key: scope.required
+              value:
+                stringValue: foo
+        logRecords:
+          - attributes:
+              - key: fruit
+                value:
+                  stringValue: apple
+            body:
+              stringValue: This is a log message
+            severityText: "INFO"
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""
+          - attributes:
+              - key: fruit
+                value:
+                  stringValue: orange
+            body:
+              stringValue: This is a log message
+            severityText: "INFO"
+            spanId: ""
+            timeUnixNano: "1581452773000000789"
+            traceId: ""
