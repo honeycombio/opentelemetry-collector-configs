@@ -1,0 +1,37 @@
+type: reduce
+scope_name: otelcol/reduce
+
+status:
+  class: processor
+  stability:
+    development: [logs]
+  distributions: []
+  warnings: []
+  codeowners:
+    active: [MikeGoldsmith, codeboten]
+
+tests:
+  config:
+
+telemetry:
+  metrics:
+    reduce_processor_received:
+      description: Number of log events received
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+    reduce_processor_combined:
+      description: Number of log events that were combined
+      unit: "{records}"
+      enabled: true
+      histogram:
+        value_type: int
+    reduce_processor_output:
+      description: Number of aggreated log events output
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
