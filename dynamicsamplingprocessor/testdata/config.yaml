@@ -1,0 +1,22 @@
+processors:
+  dynamic_sampler:
+    # option one: EMADynamicSampler
+    - sampler: "EMADynamicSampler"
+      goal_sample_rate: 10
+      key_fields: ["key1", "key2"]
+
+    # option two: EMAThroughputSampler
+    # name: "EMAThroughputSampler"
+    # # goal_throughput_per_second is the target number of events to send per second.
+    # goal_throughput_per_second: 100
+    # key_fields: ["key1", "key2"]
+
+exporters:
+  nop:
+
+service:
+  pipelines:
+    logs:
+      receivers: [ nop ]
+      processors: [ dynamic_sampler ]
+      exporters: [ nop ]

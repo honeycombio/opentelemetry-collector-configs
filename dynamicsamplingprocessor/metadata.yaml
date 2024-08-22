@@ -1,0 +1,23 @@
+type: dynamic_sampler
+scope_name: otelcol/dynamicsampling
+
+status:
+  class: processor
+  stability:
+    development: [logs]
+  distributions: []
+  codeowners:
+    active: [cartermp]
+
+tests:
+  config:
+
+telemetry:
+  metrics:
+    processor_dynamic_sampler_count_logs_sampled:
+      enabled: true
+      description: Count of logs that were sampled or not
+      unit: "1"
+      sum:
+        value_type: int
+        monotonic: true
