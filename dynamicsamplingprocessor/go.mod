@@ -1,4 +1,4 @@
-module github.com/honeycombio/opentelemetry-collector-configs/processor/dynamicsamplingprocessor
+module github.com/honeycombio/opentelemetry-collector-configs/dynamicsamplingprocessor
 
 go 1.21.0
 
