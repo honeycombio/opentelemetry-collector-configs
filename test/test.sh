@@ -7,11 +7,11 @@ orig_config_file="./artifacts/honeycomb-metrics-config.yaml"
 test_config_file=$(mktemp /tmp/test-config-XXXXXX)
 
 # make some modifications to config to make it testable
-yq -y '. * {
+bin/yq --yaml-output '. * {
   exporters: {
     file: {path: "'$output_file'"}
   },
-  receivers: { 
+  receivers: {
     hostmetrics: {
       collection_interval: "1s"
     }
@@ -46,7 +46,7 @@ wait $otelcol_pid
 echo "success!"
 
 # assert that metric names are correct
-found_names=$(jq -r '
+found_names=$(bin/jq -r '
   .resourceMetrics[] |
   .scopeMetrics[] |
   .metrics[] |
@@ -69,7 +69,7 @@ if (( ${metric_count} < 40 )); then
   exit 1
 fi
 
-unique_timestamps=$(jq -sr '
+unique_timestamps=$(bin/jq -sr '
     .[0].resourceMetrics[] |
     .scopeMetrics[] |
     .metrics[] |

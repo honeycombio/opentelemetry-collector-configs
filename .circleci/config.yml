@@ -11,32 +11,14 @@ jobs:
             - builder-config-{{ checksum "builder-config.yaml" }}
       - run:
           name: install dependencies
-          environment:
-            OTC_BUILDER_VERSION: 0.98.0
-            PYTHON_VERSION: 3.9
           command: |
-            sudo apt-get update -qq
-            sudo apt-get install -y python2  libbz2-dev  libreadline-dev libssl-dev openssl
-            curl https://pyenv.run | bash 
-            sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
-            pyenv install $PYTHON_VERSION
-            pyenv global $PYTHON_VERSION
-            pip3 install yq
             export GOARCH=$(go env GOARCH)
             export GOOS=$(go env GOOS)
-            mkdir -p /home/circleci/bin
-            curl -sLo /home/circleci/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
-            chmod u+x /home/circleci/bin/ocb
-            python --version
-            pip3 --version
-            ocb version
+            make bin/ocb
+            bin/ocb version
       - run:
           name: Run tests
           command: |
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
             make test
       - run:
           name: Create artifacts

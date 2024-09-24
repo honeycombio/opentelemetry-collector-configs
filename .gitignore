@@ -1,4 +1,5 @@
 /artifacts/*
+/bin/ocb*
 /build/*
 /test/tmp-*
 /dist/*

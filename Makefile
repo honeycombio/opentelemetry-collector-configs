@@ -1,6 +1,8 @@
 VERSION?=1.0.1
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
+OTELCOL_VERSION=$(shell bin/yq --raw-output ".dist.otelcol_version" < builder-config.yaml)
+OCB=bin/ocb
 
 .PHONY: all
 all: config collector-bin collector-dist
@@ -12,7 +14,7 @@ config: artifacts/honeycomb-metrics-config.yaml
 collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 build/otelcol_hny_windows_amd64.exe
 
 .PHONY: collector-dist
-collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm 
+collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm
 
 .PHONY: release
 release:
@@ -32,10 +34,16 @@ test: integration_test
 integration_test: test/test.sh build/otelcol_hny_$(GOOS)_$(GOARCH) artifacts/honeycomb-metrics-config.yaml
 	./test/test.sh
 
+artifacts:
+	mkdir -p artifacts
+
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
-artifacts/honeycomb-metrics-config.yaml: config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
-	mkdir -p ./artifacts
-	yq -y -f ./config-generator.jq < ./vendor-fixtures/hostmetrics-receiver-metadata.yaml > ./artifacts/honeycomb-metrics-config.yaml
+artifacts/honeycomb-metrics-config.yaml: artifacts config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
+	YQ_IMAGE_TAG="lscr.io/linuxserver/yq:3.4.3" \
+		bin/yq --yaml-output \
+			--from-file ./config-generator.jq \
+			< ./vendor-fixtures/hostmetrics-receiver-metadata.yaml \
+			> ./artifacts/honeycomb-metrics-config.yaml
 
 # copy hostmetrics metadata yaml file from the OpenTelemetry Collector repository, and prepend a note saying it's vendored
 vendor-fixtures/hostmetrics-receiver-metadata.yaml:
@@ -58,8 +66,8 @@ build/otelcol_hny_windows_amd64.exe:
 	GOOS=windows GOARCH=amd64 EXTENSION=.exe $(MAKE) build-binary-internal
 
 .PHONY: build-binary-internal
-build-binary-internal: builder-config.yaml
-	ocb --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
+build-binary-internal: $(OCB) builder-config.yaml
+	$(OCB) --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
@@ -81,3 +89,14 @@ build-package-internal:
 .PHONY: clean
 clean:
 	rm -f build/* compact-config.yaml test/tmp-* dist/* artifacts/*
+
+#: symlink for convenience to OpenTelemetry Collector Builder for this project
+$(OCB): $(OCB)-$(OTELCOL_VERSION)
+	ln -s -f $(shell basename $<) $@
+
+#: the OpenTelemetry Collector Builder for this project; to be downloaded when not present
+$(OCB)-$(OTELCOL_VERSION):
+	mkdir -p $(shell dirname $@)
+	curl --fail --location --output $@ \
+		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
+	chmod u+x $@
