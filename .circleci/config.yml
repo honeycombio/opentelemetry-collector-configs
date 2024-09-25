@@ -5,7 +5,6 @@ jobs:
     docker:
       - image: cimg/go:1.21
     steps:
-      - setup_remote_docker
       - checkout
       - restore_cache:
           keys:
