@@ -1,7 +1,7 @@
 VERSION?=1.0.1
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
-OTELCOL_VERSION=$(shell bin/yq --raw-output ".dist.otelcol_version" < builder-config.yaml)
+YQ=bin/yq
 OCB=bin/ocb
 
 .PHONY: all
@@ -39,11 +39,10 @@ artifacts:
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 artifacts/honeycomb-metrics-config.yaml: artifacts config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
-	YQ_IMAGE_TAG="lscr.io/linuxserver/yq:3.4.3" \
-		bin/yq --yaml-output \
-			--from-file ./config-generator.jq \
-			< ./vendor-fixtures/hostmetrics-receiver-metadata.yaml \
-			> ./artifacts/honeycomb-metrics-config.yaml
+	$(YQ) --yaml-output \
+		--from-file ./config-generator.jq \
+		< ./vendor-fixtures/hostmetrics-receiver-metadata.yaml \
+		> ./artifacts/honeycomb-metrics-config.yaml
 
 # copy hostmetrics metadata yaml file from the OpenTelemetry Collector repository, and prepend a note saying it's vendored
 vendor-fixtures/hostmetrics-receiver-metadata.yaml:
@@ -90,13 +89,13 @@ build-package-internal:
 clean:
 	rm -f build/* compact-config.yaml test/tmp-* dist/* artifacts/*
 
+OTELCOL_VERSION=$(shell $(YQ) --raw-output ".dist.otelcol_version" < builder-config.yaml)
 #: symlink for convenience to OpenTelemetry Collector Builder for this project
 $(OCB): $(OCB)-$(OTELCOL_VERSION)
 	ln -s -f $(shell basename $<) $@
 
 #: the OpenTelemetry Collector Builder for this project; to be downloaded when not present
 $(OCB)-$(OTELCOL_VERSION):
-	mkdir -p $(shell dirname $@)
 	curl --fail --location --output $@ \
 		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
 	chmod u+x $@

@@ -13,18 +13,26 @@
 
 set -e
 
-# Setup volume mounts for compose config and context
-if [ "${PWD}" != '/' ]; then
-    VOLUMES="-v ${PWD}:${PWD}"
+if command -v jq 2>&1 >/dev/null
+then
+    # jq is installed on the host ...
+    exec jq "$@"
+else
+    echo "\n⚠️ jq isn't on the path, so we'll try to use the docker image\n" >&2
+
+    # Setup volume mounts for compose config and context
+    if [ "${PWD}" != '/' ]; then
+        VOLUMES="-v ${PWD}:${PWD}"
+    fi
+
+    # Only allocate tty if we detect one
+    if [ -t 0 ] && [ -t 1 ]; then
+        DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -t"
+    fi
+
+    # Always set -i to support piped and terminal input in run/exec
+    DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -i"
+
+    # shellcheck disable=SC2086
+    exec docker run --rm ${DOCKER_RUN_OPTIONS} ${JQ_OPTIONS} ${VOLUMES} -w "${PWD}" --entrypoint jq "${YQ_IMAGE_TAG:-lscr.io/linuxserver/yq:latest}" "$@"
 fi
-
-# Only allocate tty if we detect one
-if [ -t 0 ] && [ -t 1 ]; then
-    DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -t"
-fi
-
-# Always set -i to support piped and terminal input in run/exec
-DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -i"
-
-# shellcheck disable=SC2086
-exec docker run --rm ${DOCKER_RUN_OPTIONS} ${JQ_OPTIONS} ${VOLUMES} -w "${PWD}" --entrypoint jq "${YQ_IMAGE_TAG:-lscr.io/linuxserver/yq:latest}" "$@"

@@ -13,18 +13,31 @@
 
 set -e
 
-# Setup volume mounts for compose config and context
-if [ "${PWD}" != '/' ]; then
-    VOLUMES="-v ${PWD}:${PWD}"
+if command -v yq 2>&1 >/dev/null
+then
+    # yq is installed on the host ...
+    if yq --help | grep '\-\-yaml-output' --silent
+    then
+        exec yq "$@"
+    else
+        echo "\n🛑 The yq installed appears to be go-yq. We need python-yq: https://kislyuk.github.io/yq/#installation\n" >&2 && exit 1
+    fi
+else
+    echo "\n⚠️ yq isn't on the path, so we'll try to use the docker image\n" >&2
+
+    # Setup volume mounts for compose config and context
+    if [ "${PWD}" != '/' ]; then
+        VOLUMES="-v ${PWD}:${PWD}"
+    fi
+
+    # Only allocate tty if we detect one
+    if [ -t 0 ] && [ -t 1 ]; then
+        DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -t"
+    fi
+
+    # Always set -i to support piped and terminal input in run/exec
+    DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -i"
+
+    # shellcheck disable=SC2086
+    exec docker run --rm ${DOCKER_RUN_OPTIONS} ${YQ_OPTIONS} ${VOLUMES} -w "${PWD}" --entrypoint yq "${YQ_IMAGE_TAG:-lscr.io/linuxserver/yq:latest}" "$@"
 fi
-
-# Only allocate tty if we detect one
-if [ -t 0 ] && [ -t 1 ]; then
-    DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -t"
-fi
-
-# Always set -i to support piped and terminal input in run/exec
-DOCKER_RUN_OPTIONS="${DOCKER_RUN_OPTIONS} -i"
-
-# shellcheck disable=SC2086
-exec docker run --rm ${DOCKER_RUN_OPTIONS} ${YQ_OPTIONS} ${VOLUMES} -w "${PWD}" --entrypoint yq "${YQ_IMAGE_TAG:-lscr.io/linuxserver/yq:latest}" "$@"
