@@ -106,3 +106,37 @@ $(OCB)-$(OTELCOL_VERSION):
 	curl --fail --location --output $@ \
 		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
 	chmod u+x $@
+
+JOB ?= build
+#: run a CI job in docker locally, set JOB=some-job to override default 'build'
+ci_local_exec: local_ci_prereqs
+	circleci local execute $(JOB) --config .circleci/config-processed.yml
+
+### Utilities
+
+# To use the circleci CLI to run jobs on your laptop.
+circle_cli_docs_url = https://circleci.com/docs/local-cli/
+local_ci_prereqs: forbidden_in_real_ci circle_cli_available .circleci/config-processed.yml
+
+# the config must be processed to do things like expand matrix jobs.
+.circleci/config-processed.yml: circle_cli_available .circleci/config.yml
+	circleci config process .circleci/config.yml > .circleci/config-processed.yml
+
+circle_cli_available:
+ifneq (, $(shell which circleci))
+	@echo "🔎:✅ circleci CLI available"
+else
+	@echo "🔎:💥 circleci CLI command not available for local run."
+	@echo ""
+	@echo "   ❓ Is it installed? For more info: ${circle_cli_docs_url}\n\n" && exit 1
+endif
+
+forbidden_in_real_ci:
+ifeq ($(CIRCLECI),) # if not set, safe to assume not running in CircleCI compute
+	@echo "🔎:✅ not running in real CI"
+else
+	@echo "🔎:🛑 CIRCLECI environment variable is present, a sign that we're running in real CircleCI compute."
+	@echo ""
+	@echo "   🙈 circleci CLI can't local execute in Circle. That'd be 🍌🍌🍌."
+	@echo "" && exit 1
+endif

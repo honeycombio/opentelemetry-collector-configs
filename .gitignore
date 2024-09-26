@@ -1,3 +1,4 @@
+/.circleci/config-processed.yml
 /artifacts/*
 /bin/ocb*
 /build/*
