@@ -1,4 +1,21 @@
 version: 2.1
+commands:
+  setup_yq:
+    description: "Ensure the right yq is installed"
+    steps:
+      - run:
+          name: Maybe install Python yq
+          command: |
+            if ! bin/yq --version; then
+              sudo apt-get update -qq
+              sudo apt-get install -y python3-pip
+              pip install yq
+            fi
+      - run:
+          name: Right yq?
+          command: |
+            bin/yq --version
+
 jobs:
   build:
     working_directory: ~/repo
@@ -6,21 +23,10 @@ jobs:
       - image: cimg/go:1.21
     steps:
       - checkout
+      - setup_yq
       - restore_cache:
           keys:
             - builder-config-{{ checksum "builder-config.yaml" }}
-      - run:
-          name: install dependencies
-          environment:
-            PYTHON_VERSION: 3.9
-          command: |
-            sudo apt-get update -qq
-            sudo apt-get install -y python3-pip
-            pip install yq
-            export GOARCH=$(go env GOARCH)
-            export GOOS=$(go env GOOS)
-            make bin/ocb
-            bin/ocb version
       - run:
           name: Run tests
           command: |

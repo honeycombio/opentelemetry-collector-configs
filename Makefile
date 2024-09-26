@@ -49,6 +49,9 @@ vendor-fixtures/hostmetrics-receiver-metadata.yaml:
 	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
+#: build the Honeycomb OpenTelemetry Collector for the current host's platform
+build: build/otelcol_hny_$(GOOS)_$(GOARCH)
+
 build/otelcol_hny_darwin_amd64:
 	GOOS=darwin GOARCH=amd64 $(MAKE) build-binary-internal
 
