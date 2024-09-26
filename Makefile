@@ -49,6 +49,10 @@ vendor-fixtures/hostmetrics-receiver-metadata.yaml:
 	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
+src: $(OCB) builder-config.yaml
+	$(OCB) --output-path=src --skip-compilation --name=otelcol_hny --version=$(VERSION) --config=builder-config.yaml
+
+.PHONY: build
 #: build the Honeycomb OpenTelemetry Collector for the current host's platform
 build: build/otelcol_hny_$(GOOS)_$(GOARCH)
 
@@ -68,8 +72,8 @@ build/otelcol_hny_windows_amd64.exe:
 	GOOS=windows GOARCH=amd64 EXTENSION=.exe $(MAKE) build-binary-internal
 
 .PHONY: build-binary-internal
-build-binary-internal: $(OCB) builder-config.yaml
-	$(OCB) --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
+build-binary-internal: src builder-config.yaml
+	CGO_ENABLED=0 go build -C ./src -o ../build/otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
@@ -90,7 +94,7 @@ build-package-internal:
 
 .PHONY: clean
 clean:
-	rm -f build/* compact-config.yaml test/tmp-* dist/* artifacts/*
+	rm -rf src build/* compact-config.yaml test/tmp-* dist/* artifacts/*
 
 OTELCOL_VERSION=$(shell $(YQ) --raw-output ".dist.otelcol_version" < builder-config.yaml)
 #: symlink for convenience to OpenTelemetry Collector Builder for this project

@@ -2,6 +2,7 @@
 /bin/ocb*
 /build/*
 /test/tmp-*
+/src
 /dist/*
 
 # GoLand IDEA
