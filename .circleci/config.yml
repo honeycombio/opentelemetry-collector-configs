@@ -15,13 +15,8 @@ jobs:
             PYTHON_VERSION: 3.9
           command: |
             sudo apt-get update -qq
-            sudo apt-get install -y python2  libbz2-dev  libreadline-dev libssl-dev openssl
-            curl https://pyenv.run | bash
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
-            pyenv install $PYTHON_VERSION
-            pyenv global $PYTHON_VERSION
-            pip3 install yq
+            sudo apt-get install -y python3-pip
+            pip install yq
             export GOARCH=$(go env GOARCH)
             export GOOS=$(go env GOOS)
             make bin/ocb
@@ -29,8 +24,6 @@ jobs:
       - run:
           name: Run tests
           command: |
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
             make test
       - run:
           name: Create artifacts
