@@ -14,7 +14,7 @@ config: artifacts/honeycomb-metrics-config.yaml
 collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 build/otelcol_hny_windows_amd64.exe
 
 .PHONY: collector-dist
-collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector_$(VERSION)_x86_64.rpm dist/otel-hny-collector_$(VERSION)_arm64.rpm
+collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector-$(VERSION)-x86_64.rpm dist/otel-hny-collector-$(VERSION)-arm64.rpm
 
 .PHONY: release
 release:
@@ -81,10 +81,10 @@ dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 dist/otel-hny-collector_%_arm64.deb: build/otelcol_hny_linux_arm64
 	PACKAGE=deb ARCH=arm64 VERSION=$* $(MAKE) build-package-internal
 
-dist/otel-hny-collector_%_x86_64.rpm: build/otelcol_hny_linux_amd64
+dist/otel-hny-collector-%-x86_64.rpm: build/otelcol_hny_linux_amd64
 	PACKAGE=rpm ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
 
-dist/otel-hny-collector_%_arm64.rpm: build/otelcol_hny_linux_arm64
+dist/otel-hny-collector-%-arm64.rpm: build/otelcol_hny_linux_arm64
 	PACKAGE=rpm ARCH=arm64 VERSION=$* $(MAKE) build-package-internal
 
 .PHONY: build-package-internal
