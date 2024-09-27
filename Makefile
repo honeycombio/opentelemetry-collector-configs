@@ -1,6 +1,27 @@
-VERSION?=$(shell git describe --tags --always)
+# CMD :: the identity of what we're building: the executable name, image name, etc.
+CMD=otelcol_hny
+
+# Figure out the version of the project
+CIRCLE_TAG?=$(shell git describe --tags --always) # compute a "tag" if not set by CI or a human
+VERSION=$(CIRCLE_TAG:v%=%)
+ifneq (,$(findstring -g,$(VERSION))) # if the version contains a git hash, it's a dev build
+TAGS=$(VERSION),dev
+else
+TAGS=$(VERSION),latest
+endif
+
+.PHONY: version
+#: print out the detected version and other build info
+version:
+	@echo "CIRCLE_TAG: $(CIRCLE_TAG)"
+	@echo "VERSION (build info & packaging): $(VERSION)"
+	@echo "TAGS (for image labeling): $(TAGS)"
+
+# The Go platform info for the build host; cross-compile target are figured out differently
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
+
+# Some tools needed for build.
 YQ=bin/yq
 OCB=bin/ocb
 
@@ -32,6 +53,7 @@ test: integration_test
 
 .PHONY: integration_test
 integration_test: test/test.sh build/otelcol_hny_$(GOOS)_$(GOARCH) artifacts/honeycomb-metrics-config.yaml
+	@echo "\n +++ Running integration tests\n"
 	./test/test.sh
 
 artifacts:
@@ -39,6 +61,7 @@ artifacts:
 
 # generate a configuration file for otel-collector that results in a favorable repackaging ratio
 artifacts/honeycomb-metrics-config.yaml: artifacts config-generator.jq vendor-fixtures/hostmetrics-receiver-metadata.yaml
+	@echo "\n +++ Generating configuration for metrics rename and compaction\n"
 	$(YQ) --yaml-output \
 		--from-file ./config-generator.jq \
 		< ./vendor-fixtures/hostmetrics-receiver-metadata.yaml \
@@ -49,8 +72,11 @@ vendor-fixtures/hostmetrics-receiver-metadata.yaml:
 	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
-src: $(OCB) builder-config.yaml
-	$(OCB) --output-path=src --skip-compilation --name=otelcol_hny --version=$(VERSION) --config=builder-config.yaml
+cmd/$(CMD): $(OCB) builder-config.yaml
+	@echo "\n +++ Generating $(CMD) sources\n"
+	mkdir -p $@
+	$(OCB) --output-path=$@ --skip-compilation --name=$(CMD) --version=$(VERSION) --config=builder-config.yaml
+	touch $@
 
 .PHONY: build
 #: build the Honeycomb OpenTelemetry Collector for the current host's platform
@@ -72,8 +98,9 @@ build/otelcol_hny_windows_amd64.exe:
 	GOOS=windows GOARCH=amd64 EXTENSION=.exe $(MAKE) build-binary-internal
 
 .PHONY: build-binary-internal
-build-binary-internal: src builder-config.yaml
-	CGO_ENABLED=0 go build -C ./src -o ../build/otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
+build-binary-internal: cmd/$(CMD) builder-config.yaml
+	@echo "\n +++ Building $(CMD) for $(GOOS)/$(GOARCH)\n"
+	CGO_ENABLED=0 go build -C $< -o ../../build/$(CMD)_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
@@ -89,12 +116,14 @@ dist/otel-hny-collector-%-arm64.rpm: build/otelcol_hny_linux_arm64
 
 .PHONY: build-package-internal
 build-package-internal:
+	@echo "\n +++ Packaging $(VERSION) $(PACKAGE) for $(ARCH)\n"
 	docker build -t otelcol-fpm packaging/fpm
 	docker run --rm -v $(CURDIR):/repo -e VERSION=$(VERSION) -e ARCH=$(ARCH) -e PACKAGE=$(PACKAGE) otelcol-fpm
 
 .PHONY: clean
 clean:
-	rm -rf src build/* compact-config.yaml test/tmp-* dist/* artifacts/*
+	@echo "\n +++ Cleaning up generated things\n"
+	rm -rf cmd/otelcol_hny build/* compact-config.yaml test/tmp-* dist/* artifacts/*
 
 OTELCOL_VERSION=$(shell $(YQ) --raw-output ".dist.otelcol_version" < builder-config.yaml)
 #: symlink for convenience to OpenTelemetry Collector Builder for this project
@@ -103,6 +132,7 @@ $(OCB): $(OCB)-$(OTELCOL_VERSION)
 
 #: the OpenTelemetry Collector Builder for this project; to be downloaded when not present
 $(OCB)-$(OTELCOL_VERSION):
+	@echo "\n +++ Retrieve required OpenTelemetry Collector Builder v$(OTELCOL_VERSION)\n"
 	curl --fail --location --output $@ \
 		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
 	chmod u+x $@

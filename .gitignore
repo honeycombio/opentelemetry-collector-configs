@@ -3,7 +3,7 @@
 /bin/ocb*
 /build/*
 /test/tmp-*
-/src
+/cmd/otelcol_hny
 /dist/*
 
 # GoLand IDEA
