@@ -72,26 +72,41 @@ vendor-fixtures/hostmetrics-receiver-metadata.yaml:
 	REMOTE_PATH='https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml'; \
 	curl $$REMOTE_PATH | sed "1s|^|# DO NOT EDIT! This file is vendored from $${REMOTE_PATH}"$$'\\\n\\\n|' > vendor-fixtures/hostmetrics-receiver-metadata.yaml
 
-cmd/$(CMD): $(OCB) builder-config.yaml
-	@echo "\n +++ Generating $(CMD) sources\n"
+#
+# Source Generation
+#
+
+SRC_DIR=cmd/$(CMD)
+$(SRC_DIR):
 	mkdir -p $@
-	$(OCB) --output-path=$@ --skip-compilation --name=$(CMD) --version=$(VERSION) --config=builder-config.yaml
-	touch $@
+
+GO_SOURCES := $(SRC_DIR)/go.mod $(SRC_DIR)/go.sum $(wildcard $(SRC_DIR)/*.go)
+.PHONY: source
+#: generate the source for the custom build
+source: $(GO_SOURCES)
+# "&:" here is a grouped target where all the files listed in GO_SOURCES are generated *once* by this rule
+$(GO_SOURCES) &: $(SRC_DIR) $(OCB) builder-config.yaml
+	@echo "\n +++ Generating $(CMD) sources\n"
+	$(OCB) --output-path=$(SRC_DIR) --skip-compilation --name=$(CMD) --version=$(VERSION) --config=builder-config.yaml
+
+#
+# Binary Builds
+#
 
 .PHONY: build
 #: build the Honeycomb OpenTelemetry Collector for the current host's platform
 build: build/otelcol_hny_$(GOOS)_$(GOARCH)
 
-build/otelcol_hny_darwin_amd64:
+build/otelcol_hny_darwin_amd64: $(GO_SOURCES)
 	GOOS=darwin GOARCH=amd64 $(MAKE) build-binary-internal
 
-build/otelcol_hny_darwin_arm64:
+build/otelcol_hny_darwin_arm64: $(GO_SOURCES)
 	GOOS=darwin GOARCH=arm64 $(MAKE) build-binary-internal
 
-build/otelcol_hny_linux_amd64:
+build/otelcol_hny_linux_amd64: $(GO_SOURCES)
 	GOOS=linux GOARCH=amd64 $(MAKE) build-binary-internal
 
-build/otelcol_hny_linux_arm64:
+build/otelcol_hny_linux_arm64: $(GO_SOURCES)
 	GOOS=linux GOARCH=arm64 $(MAKE) build-binary-internal
 
 build/otelcol_hny_windows_amd64.exe:
@@ -100,7 +115,11 @@ build/otelcol_hny_windows_amd64.exe:
 .PHONY: build-binary-internal
 build-binary-internal: cmd/$(CMD) builder-config.yaml
 	@echo "\n +++ Building $(CMD) for $(GOOS)/$(GOARCH)\n"
-	CGO_ENABLED=0 go build -C $< -o ../../build/$(CMD)_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
+	CGO_ENABLED=0 go build -C $< -o $(CURDIR)/build/$(CMD)_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
+
+#
+# Packaging
+#
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
