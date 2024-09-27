@@ -1,0 +1,6 @@
+defaultPlatforms:
+- linux/arm64
+- linux/amd64
+builds:
+- id: otelcol_hny
+  dir: cmd/otelcol_hny

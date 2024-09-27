@@ -1,4 +1,10 @@
 version: 2.1
+
+executors:
+  go-executor:
+    docker:
+      - image: cimg/go:1.21
+
 commands:
   setup_yq:
     description: "Ensure the right yq is installed"
@@ -17,27 +23,61 @@ commands:
             bin/yq --version
 
 jobs:
-  build:
+  test:
+    executor: go-executor
     working_directory: ~/repo
-    docker:
-      - image: cimg/go:1.21
     steps:
       - checkout
       - setup_yq
-      - restore_cache:
-          keys:
-            - builder-config-{{ checksum "builder-config.yaml" }}
       - run:
           name: Run tests
           command: |
             make test
+      - persist_to_workspace:
+          root: .
+          paths:
+            - cmd
+  build:
+    executor: go-executor
+    # working_directory: ~/repo
+    steps:
+      - checkout
+      - setup_remote_docker
+      - setup_yq
+      - attach_workspace:
+          at: .
       - run:
-          name: Create artifacts
-          command: |
-            mkdir -p /tmp/images;
-            cp build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
-      - save_cache:
-          key: builder-config-{{ checksum "builder-config.yaml" }}
-          paths: build
+          name: Cross-compile binaries
+          command: make collector-bin
+      - run:
+          name: Build Docker image
+          command: make image
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build
       - store_artifacts:
-          path: /tmp/images
+          path: build
+
+filters_always: &filters_always
+  filters:
+    tags:
+      only: /.*/
+
+filters_publish: &filters_publish
+  filters:
+    tags:
+      only: /^v[0-9].*/
+    branches:
+      ignore: /.*/
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test:
+          <<: *filters_always
+      - build:
+          <<: *filters_always
+          requires:
+            - test

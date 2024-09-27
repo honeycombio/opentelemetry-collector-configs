@@ -1,5 +1,6 @@
 /.circleci/config-processed.yml
 /artifacts/*
+/bin/ko*
 /bin/ocb*
 /build/*
 /test/tmp-*

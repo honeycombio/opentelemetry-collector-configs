@@ -24,6 +24,7 @@ GOARCH=$(shell go env GOARCH)
 # Some tools needed for build.
 YQ=bin/yq
 OCB=bin/ocb
+KO=bin/ko
 
 .PHONY: all
 all: config collector-bin collector-dist
@@ -118,6 +119,23 @@ build-binary-internal: cmd/$(CMD) builder-config.yaml
 	CGO_ENABLED=0 go build -C $< -o $(CURDIR)/build/$(CMD)_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
 
 #
+# Image Build
+#
+
+.PHONY: image
+image: $(GO_SOURCES) $(KO)
+	@echo "\n +++ Building image with tags: $(TAGS)\n"
+	KO_DOCKER_REPO=ko.local \
+	BUILD_SHA1=$(shell git rev-parse HEAD) \
+	SOURCE_DATE_EPOCH=$(shell date +%s) \
+	$(KO) build ./cmd/$(CMD) \
+		--base-import-paths \
+		--image-label org.opencontainers.image.source=https://github.com/honeycombio/opentelemetry-collector-configs \
+		--image-label org.opencontainers.image.licenses=Apache-2.0 \
+		--image-label org.opencontainers.image.revision=${BUILD_SHA1} \
+		--tags=$(TAGS)
+
+#
 # Packaging
 #
 
@@ -144,6 +162,10 @@ clean:
 	@echo "\n +++ Cleaning up generated things\n"
 	rm -rf cmd/otelcol_hny build/* compact-config.yaml test/tmp-* dist/* artifacts/*
 
+.PHONY: squeaky_clean
+squeaky_clean: clean
+	git clean --force -X bin/
+
 OTELCOL_VERSION=$(shell $(YQ) --raw-output ".dist.otelcol_version" < builder-config.yaml)
 #: symlink for convenience to OpenTelemetry Collector Builder for this project
 $(OCB): $(OCB)-$(OTELCOL_VERSION)
@@ -155,6 +177,28 @@ $(OCB)-$(OTELCOL_VERSION):
 	curl --fail --location --output $@ \
 		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
 	chmod u+x $@
+
+KO_VERSION ?= 0.16.0
+KO_RELEASE_ASSET := ko_$(KO_VERSION)_$(GOOS)_x86_64.tar.gz
+# ensure the dockerize command is available
+$(KO): $(KO)_$(KO_VERSION).tar.gz
+	tar xzvmf $< -C bin ko
+	chmod u+x $@
+
+$(KO)_$(KO_VERSION).tar.gz:
+	@echo
+	@echo "+++ Retrieving ko tool for docker image building."
+	@echo
+# make sure that file is available
+ifeq (, $(shell command -v file))
+	sudo apt-get update
+	sudo apt-get -y install file
+endif
+	curl --location --silent --show-error \
+		--output ko_tmp.tar.gz \
+		https://github.com/ko-build/ko/releases/download/v$(KO_VERSION)/$(KO_RELEASE_ASSET) \
+	&& file ko_tmp.tar.gz | grep --silent gzip \
+	&& mv ko_tmp.tar.gz $@ || (echo "Failed to download ko. Got:"; cat ko_tmp.tar.gz ; echo "" ; exit 1)
 
 JOB ?= build
 #: run a CI job in docker locally, set JOB=some-job to override default 'build'
