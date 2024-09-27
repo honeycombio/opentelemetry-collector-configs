@@ -98,25 +98,36 @@ $(GO_SOURCES) &: $(SRC_DIR) $(OCB) builder-config.yaml
 #: build the Honeycomb OpenTelemetry Collector for the current host's platform
 build: build/otelcol_hny_$(GOOS)_$(GOARCH)
 
-build/otelcol_hny_darwin_amd64: $(GO_SOURCES)
-	GOOS=darwin GOARCH=amd64 $(MAKE) build-binary-internal
+# Which operating systems and architectures will we cross-compile for?
+# In the form of <os><arch>
+OSARCHS=\
+	linux_amd64   \
+	linux_arm64   \
+	darwin_amd64  \
+	darwin_arm64  \
+	windows_amd64 \
 
-build/otelcol_hny_darwin_arm64: $(GO_SOURCES)
-	GOOS=darwin GOARCH=arm64 $(MAKE) build-binary-internal
+# each item in OSARCHS appended to "build/otelcol_hny" to
+# generate the list of file paths for binaries to be cross-compiled
+# ex: "build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 ..."
+BINARIES=$(OSARCHS:%=build/$(CMD)_%)
 
-build/otelcol_hny_linux_amd64: $(GO_SOURCES)
-	GOOS=linux GOARCH=amd64 $(MAKE) build-binary-internal
+# these targets set OS and ARCH variables for any target that matches a path in $(BINARIES)
+# ex: "build/otelcol_hny_linux_arm64"
+# 0: "build/otelcol_hny" | 1: "linux" | 2: "arm64"
+# $* is the matched pattern, which is split on '_' to get the OS & ARCH values
+$(BINARIES): OS = $(word 1,$(subst _, ,$*))
+$(BINARIES): ARCH = $(word 2,$(subst _, ,$*))
 
-build/otelcol_hny_linux_arm64: $(GO_SOURCES)
-	GOOS=linux GOARCH=arm64 $(MAKE) build-binary-internal
+#: build a binary for OS/ARCH
+$(BINARIES): build/$(CMD)_%: $(GO_SOURCES)
+	@echo "\n +++ Building $@\n"
+	GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 \
+		go build -C cmd/$(CMD) -o $(CURDIR)/$@ ./...
 
-build/otelcol_hny_windows_amd64.exe:
-	GOOS=windows GOARCH=amd64 EXTENSION=.exe $(MAKE) build-binary-internal
-
-.PHONY: build-binary-internal
-build-binary-internal: cmd/$(CMD) builder-config.yaml
-	@echo "\n +++ Building $(CMD) for $(GOOS)/$(GOARCH)\n"
-	CGO_ENABLED=0 go build -C $< -o $(CURDIR)/build/$(CMD)_$(GOOS)_$(GOARCH)$(EXTENSION) ./...
+build/$(CMD)_windows_amd64.exe: build/$(CMD)_windows_amd64
+	@echo "\n +++ Giving Windows an extension: $@\n"
+	mv $< $@
 
 #
 # Image Build
