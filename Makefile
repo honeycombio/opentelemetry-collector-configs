@@ -15,7 +15,6 @@ endif
 version:
 	@echo "CIRCLE_TAG: $(CIRCLE_TAG)"
 	@echo "VERSION (build info & packaging): $(VERSION)"
-	@echo "TAGS (for image labeling): $(TAGS)"
 
 # The Go platform info for the build host; cross-compile target are figured out differently
 GOOS=$(shell go env GOOS)
@@ -112,7 +111,7 @@ KO_DOCKER_REPO ?= ko.local
 image: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Building image \n"
 	VERSION=$(VERSION) \
-		$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,nfpm,publish --single-target
+		$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,nfpm,publish
 
 .PHONY: clean
 clean:

@@ -21,12 +21,24 @@ commands:
           name: Right yq?
           command: |
             bin/yq --version
+  setup_remote_and_local_docker:
+    description: "Setup Docker and fiddle permissions when running local CI"
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Maybe fiddle local Docker permissions
+          command: |
+            ls -ls /var/run/docker*.sock
+            if [[ ${CIRCLE_SHELL_ENV} =~ "localbuild" ]]; then
+              sudo chgrp circleci /var/run/docker*.sock
+            fi
+            ls -ls /var/run/docker*.sock
 
 jobs:
   test:
     executor: go-executor
-    working_directory: ~/repo
     steps:
+      - setup_remote_and_local_docker
       - checkout
       - setup_yq
       - run:
@@ -39,10 +51,9 @@ jobs:
             - cmd
   build:
     executor: go-executor
-    # working_directory: ~/repo
     steps:
+      - setup_remote_and_local_docker
       - checkout
-      - setup_remote_docker
       - setup_yq
       - attach_workspace:
           at: .
@@ -89,3 +100,7 @@ workflows:
           <<: *filters_always
           requires:
             - test
+      - publish_image:
+          <<: *filters_publish
+          requires:
+            - build
