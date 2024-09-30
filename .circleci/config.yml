@@ -6,21 +6,22 @@ executors:
       - image: cimg/go:1.21
 
 commands:
-  setup_yq:
-    description: "Ensure the right yq is installed"
+  setup_build_tools:
+    description: "Ensure the build tools are installed"
     steps:
       - run:
-          name: Maybe install Python yq
+          name: Ensure the right yq is installed
           command: |
             if ! bin/yq --version; then
               sudo apt-get update -qq
               sudo apt-get install -y python3-pip
               pip install yq
             fi
-      - run:
-          name: Right yq?
-          command: |
             bin/yq --version
+      - run:
+          name: Install build tools
+          command: make tools_exist
+
   setup_remote_and_local_docker:
     description: "Setup Docker and fiddle permissions when running local CI"
     steps:
@@ -38,9 +39,9 @@ jobs:
   test:
     executor: go-executor
     steps:
-      - setup_remote_and_local_docker
       - checkout
-      - setup_yq
+      - setup_remote_and_local_docker
+      - setup_build_tools
       - run:
           name: Run tests
           command: |
@@ -52,24 +53,31 @@ jobs:
   build:
     executor: go-executor
     steps:
-      - setup_remote_and_local_docker
       - checkout
-      - setup_yq
-      - attach_workspace:
-          at: .
+      - setup_remote_and_local_docker
+      - setup_build_tools
       - run:
-          name: Cross-compile binaries and build Docker image
+          name: Build for target test platform
+          command: make build
+      - run:
+          name: Test
+          command: make test
+      - run:
+          name: Cross-compile binaries and build local Docker image
           command: make all
-      - persist_to_workspace:
-          root: .
+      - save_cache:
+          key: go_build_cache-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-            - dist
+            - /home/circleci/.cache/go-build
       - store_artifacts:
           path: dist
   publish_image:
     executor: go-executor
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - go_build_cache-{{ .Environment.CIRCLE_SHA1 }}
       - setup_remote_docker
       - attach_workspace:
           at: .

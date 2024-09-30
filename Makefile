@@ -25,6 +25,9 @@ YQ=bin/yq
 OCB=bin/ocb
 GORELEASER=bin/goreleaser
 
+.PHONY: tools_exist
+tools_exist: $(YQ) $(OCB) $(GORELEASER)
+
 .PHONY: all
 all: config image
 
