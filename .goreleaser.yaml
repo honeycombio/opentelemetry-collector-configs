@@ -83,6 +83,7 @@ nfpms:
       preremove: packaging/fpm/preuninstall.sh
 
 release:
+  draft: true
   extra_files:
     - glob: ./artifacts/honeycomb-metrics-config.yaml
 
