@@ -1,4 +1,4 @@
-# DO NOT EDIT! This file is vendored from https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/main/receiver/hostmetricsreceiver/metadata.yaml
+# DO NOT EDIT! This file is vendored from https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector-contrib/141da3a5c4a1bf1570372e2890af383dd833167b/receiver/hostmetricsreceiver/metadata.yaml
 
 name: hostmetricsreceiver
 
