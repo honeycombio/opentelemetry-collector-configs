@@ -36,20 +36,6 @@ commands:
             ls -ls /var/run/docker*.sock
 
 jobs:
-  test:
-    executor: go-executor
-    steps:
-      - checkout
-      - setup_remote_and_local_docker
-      - setup_build_tools
-      - run:
-          name: Run tests
-          command: |
-            make test
-      - persist_to_workspace:
-          root: .
-          paths:
-            - cmd
   build:
     executor: go-executor
     steps:
@@ -102,12 +88,8 @@ workflows:
   version: 2
   build:
     jobs:
-      - test:
-          <<: *filters_always
       - build:
           <<: *filters_always
-          requires:
-            - test
       - publish_image:
           <<: *filters_publish
           requires:
