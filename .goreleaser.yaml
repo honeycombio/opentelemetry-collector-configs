@@ -1,8 +1,5 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
+# Documentation for this config can be found at https://goreleaser.com
 
-# The lines below are called `modelines`. See `:help modeline`
-# Feel free to remove those if you don't want/need to use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 # vim: set ts=2 sw=2 tw=0 fo=cnqoj
 
@@ -27,7 +24,7 @@ builds:
     no_unique_dist_dir: true
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-dev-g{{ .ShortCommit }}"
+  version_template: "{{ .Env.VERSION }}"
 
 kos:
   - id: otelcol_hny
@@ -48,7 +45,8 @@ archives:
     format: tar.gz
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
-      {{ .ProjectName }}_
+      otelcol_hny_
+      {{- .Env.VERSION }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -59,7 +57,8 @@ archives:
       - goos: windows
         format: zip
     files:
-      - artifacts/honeycomb-metrics-config.yaml
+      - src: artifacts/honeycomb-metrics-config.yaml
+        dst: honeycomb-metrics-config.yaml
 
 nfpms:
   - package_name: otelcol_hny

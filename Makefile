@@ -40,7 +40,8 @@ collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-colle
 
 .PHONY: release
 release: artifacts/honeycomb-metrics-config.yaml $(GORELEASER)
-	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean
+	VERSION=$(VERSION) \
+		$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean
 
 .PHONY: test
 test: integration_test
@@ -88,26 +89,30 @@ $(GO_SOURCES) &: $(SRC_DIR) $(OCB) builder-config.yaml
 #: build binary for the current platform
 build: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Building $@\n"
+	VERSION=$(VERSION) \
 		$(GORELEASER) build $(MAYBE_SNAPSHOT) --clean --single-target
 
 .PHONY: build_all
 #: build binaries for all target platforms
 build_all: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Building $@\n"
+	VERSION=$(VERSION) \
 		$(GORELEASER) build $(MAYBE_SNAPSHOT) --clean
 
 .PHONY: package
 #: build RPM and DEB packages
 package: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Packaging \n"
-	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,ko,publish
+	VERSION=$(VERSION) \
+		$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,ko,publish
 
 .PHONY: image
 KO_DOCKER_REPO ?= ko.local
 #: build a docker image; set KO_DOCKER_REPO to push to a registry
 image: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Building image \n"
-	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,nfpm,publish
+	VERSION=$(VERSION) \
+		$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,nfpm,publish --single-target
 
 .PHONY: clean
 clean:
