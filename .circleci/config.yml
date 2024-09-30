@@ -47,17 +47,25 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: Cross-compile binaries
-          command: make collector-bin
-      - run:
-          name: Build Docker image
-          command: make image
+          name: Cross-compile binaries and build Docker image
+          command: make all
       - persist_to_workspace:
           root: .
           paths:
-            - build
+            - dist
       - store_artifacts:
-          path: build
+          path: dist
+  publish_image:
+    executor: go-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish Docker images
+          command: |
+            make release
 
 filters_always: &filters_always
   filters:

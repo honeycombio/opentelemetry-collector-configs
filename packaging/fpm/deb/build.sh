@@ -21,7 +21,7 @@ REPO_DIR="$( cd "$SCRIPT_DIR/../../../" && pwd )"
 VERSION="${1:-}"
 ARCH="${2:-"amd64"}"
 OUTPUT_DIR="${3:-"$REPO_DIR/dist/"}"
-OTELCOL_PATH="$REPO_DIR/build/otelcol_hny_linux_$ARCH"
+OTELCOL_PATH="$REPO_DIR/dist/otelcol_hny_linux_$ARCH"
 CONFIG_PATH="$REPO_DIR/artifacts/honeycomb-metrics-config.yaml"
 
 mkdir -p $OUTPUT_DIR

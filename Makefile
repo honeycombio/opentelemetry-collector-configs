@@ -5,9 +5,9 @@ CMD=otelcol_hny
 CIRCLE_TAG?=$(shell git describe --tags --always) # compute a "tag" if not set by CI or a human
 VERSION=$(CIRCLE_TAG:v%=%)
 ifneq (,$(findstring -g,$(VERSION))) # if the version contains a git hash, it's a dev build
-TAGS=$(VERSION),dev
+MAYBE_SNAPSHOT=--snapshot
 else
-TAGS=$(VERSION),latest
+MAYBE_SNAPSHOT=
 endif
 
 .PHONY: version
@@ -24,36 +24,29 @@ GOARCH=$(shell go env GOARCH)
 # Some tools needed for build.
 YQ=bin/yq
 OCB=bin/ocb
-KO=bin/ko
+GORELEASER=bin/goreleaser
 
 .PHONY: all
-all: config collector-bin collector-dist
+all: config image
 
 .PHONY: config
 config: artifacts/honeycomb-metrics-config.yaml
 
 .PHONY: collector-bin
-collector-bin: build/otelcol_hny_darwin_amd64 build/otelcol_hny_darwin_arm64 build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 build/otelcol_hny_windows_amd64.exe
+collector-bin: dist/otelcol_hny_darwin_amd64 dist/otelcol_hny_darwin_arm64 dist/otelcol_hny_linux_amd64 dist/otelcol_hny_linux_arm64 dist/otelcol_hny_windows_amd64.exe
 
 .PHONY: collector-dist
 collector-dist: dist/otel-hny-collector_$(VERSION)_amd64.deb dist/otel-hny-collector_$(VERSION)_arm64.deb dist/otel-hny-collector-$(VERSION)-x86_64.rpm dist/otel-hny-collector-$(VERSION)-arm64.rpm
 
 .PHONY: release
-release:
-	$(MAKE) clean
-	$(MAKE) test
-	$(MAKE) artifacts/honeycomb-metrics-config.yaml
-	$(MAKE) collector-bin
-	$(MAKE) collector-dist
-	cp build/otelcol_hny_* dist
-	cp artifacts/honeycomb-metrics-config.yaml dist
-	(cd dist && shasum -a 256 * > checksums.txt)
+release: artifacts/honeycomb-metrics-config.yaml $(GORELEASER)
+	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean
 
 .PHONY: test
 test: integration_test
 
 .PHONY: integration_test
-integration_test: test/test.sh build/otelcol_hny_$(GOOS)_$(GOARCH) artifacts/honeycomb-metrics-config.yaml
+integration_test: test/test.sh artifacts/honeycomb-metrics-config.yaml build
 	@echo "\n +++ Running integration tests\n"
 	./test/test.sh
 
@@ -90,83 +83,31 @@ $(GO_SOURCES) &: $(SRC_DIR) $(OCB) builder-config.yaml
 	@echo "\n +++ Generating $(CMD) sources\n"
 	$(OCB) --output-path=$(SRC_DIR) --skip-compilation --name=$(CMD) --version=$(VERSION) --config=builder-config.yaml
 
-#
-# Binary Builds
-#
 
 .PHONY: build
-#: build the Honeycomb OpenTelemetry Collector for the current host's platform
-build: build/otelcol_hny_$(GOOS)_$(GOARCH)
-
-# Which operating systems and architectures will we cross-compile for?
-# In the form of <os><arch>
-OSARCHS=\
-	linux_amd64   \
-	linux_arm64   \
-	darwin_amd64  \
-	darwin_arm64  \
-	windows_amd64 \
-
-# each item in OSARCHS appended to "build/otelcol_hny" to
-# generate the list of file paths for binaries to be cross-compiled
-# ex: "build/otelcol_hny_linux_amd64 build/otelcol_hny_linux_arm64 ..."
-BINARIES=$(OSARCHS:%=build/$(CMD)_%)
-
-# these targets set OS and ARCH variables for any target that matches a path in $(BINARIES)
-# ex: "build/otelcol_hny_linux_arm64"
-# 0: "build/otelcol_hny" | 1: "linux" | 2: "arm64"
-# $* is the matched pattern, which is split on '_' to get the OS & ARCH values
-$(BINARIES): OS = $(word 1,$(subst _, ,$*))
-$(BINARIES): ARCH = $(word 2,$(subst _, ,$*))
-
-#: build a binary for OS/ARCH
-$(BINARIES): build/$(CMD)_%: $(GO_SOURCES)
+#: build binary for the current platform
+build: $(GO_SOURCES) $(GORELEASER)
 	@echo "\n +++ Building $@\n"
-	GOOS=$(OS) GOARCH=$(ARCH) CGO_ENABLED=0 \
-		go build -C cmd/$(CMD) -o $(CURDIR)/$@ ./...
+		$(GORELEASER) build $(MAYBE_SNAPSHOT) --clean --single-target
 
-build/$(CMD)_windows_amd64.exe: build/$(CMD)_windows_amd64
-	@echo "\n +++ Giving Windows an extension: $@\n"
-	mv $< $@
+.PHONY: build_all
+#: build binaries for all target platforms
+build_all: $(GO_SOURCES) $(GORELEASER)
+	@echo "\n +++ Building $@\n"
+		$(GORELEASER) build $(MAYBE_SNAPSHOT) --clean
 
-#
-# Image Build
-#
+.PHONY: package
+#: build RPM and DEB packages
+package: $(GO_SOURCES) $(GORELEASER)
+	@echo "\n +++ Packaging \n"
+	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,ko,publish
 
 .PHONY: image
-image: $(GO_SOURCES) $(KO)
-	@echo "\n +++ Building image with tags: $(TAGS)\n"
-	KO_DOCKER_REPO=ko.local \
-	BUILD_SHA1=$(shell git rev-parse HEAD) \
-	SOURCE_DATE_EPOCH=$(shell date +%s) \
-	$(KO) build ./cmd/$(CMD) \
-		--base-import-paths \
-		--image-label org.opencontainers.image.source=https://github.com/honeycombio/opentelemetry-collector-configs \
-		--image-label org.opencontainers.image.licenses=Apache-2.0 \
-		--image-label org.opencontainers.image.revision=${BUILD_SHA1} \
-		--tags=$(TAGS)
-
-#
-# Packaging
-#
-
-dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
-	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
-
-dist/otel-hny-collector_%_arm64.deb: build/otelcol_hny_linux_arm64
-	PACKAGE=deb ARCH=arm64 VERSION=$* $(MAKE) build-package-internal
-
-dist/otel-hny-collector-%-x86_64.rpm: build/otelcol_hny_linux_amd64
-	PACKAGE=rpm ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
-
-dist/otel-hny-collector-%-arm64.rpm: build/otelcol_hny_linux_arm64
-	PACKAGE=rpm ARCH=arm64 VERSION=$* $(MAKE) build-package-internal
-
-.PHONY: build-package-internal
-build-package-internal:
-	@echo "\n +++ Packaging $(VERSION) $(PACKAGE) for $(ARCH)\n"
-	docker build -t otelcol-fpm packaging/fpm
-	docker run --rm -v $(CURDIR):/repo -e VERSION=$(VERSION) -e ARCH=$(ARCH) -e PACKAGE=$(PACKAGE) otelcol-fpm
+KO_DOCKER_REPO ?= ko.local
+#: build a docker image; set KO_DOCKER_REPO to push to a registry
+image: $(GO_SOURCES) $(GORELEASER)
+	@echo "\n +++ Building image \n"
+	$(GORELEASER) release $(MAYBE_SNAPSHOT) --clean --skip archive,nfpm,publish
 
 .PHONY: clean
 clean:
@@ -189,16 +130,20 @@ $(OCB)-$(OTELCOL_VERSION):
 		"https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd/builder/v${OTELCOL_VERSION}/ocb_${OTELCOL_VERSION}_${GOOS}_${GOARCH}"
 	chmod u+x $@
 
-KO_VERSION ?= 0.16.0
-KO_RELEASE_ASSET := ko_$(KO_VERSION)_$(GOOS)_x86_64.tar.gz
+GORELEASER_VERSION ?= $(shell cat .tool-versions | grep goreleaser | cut -d' ' -f 2)
 # ensure the dockerize command is available
-$(KO): $(KO)_$(KO_VERSION).tar.gz
-	tar xzvmf $< -C bin ko
+$(GORELEASER): $(GORELEASER)_$(GORELEASER_VERSION).tar.gz
+	tar xzvmf $< -C bin goreleaser
 	chmod u+x $@
 
-$(KO)_$(KO_VERSION).tar.gz:
+ifeq (aarch64, $(shell uname -m))
+GORELEASER_RELEASE_ASSET = goreleaser_$(shell uname -s)_arm64.tar.gz
+else
+GORELEASER_RELEASE_ASSET = goreleaser_$(shell uname -s)_$(shell uname -m).tar.gz
+endif
+$(GORELEASER)_$(GORELEASER_VERSION).tar.gz:
 	@echo
-	@echo "+++ Retrieving ko tool for docker image building."
+	@echo "+++ Retrieving goreleaser tool for build and releasing."
 	@echo
 # make sure that file is available
 ifeq (, $(shell command -v file))
@@ -206,10 +151,10 @@ ifeq (, $(shell command -v file))
 	sudo apt-get -y install file
 endif
 	curl --location --silent --show-error \
-		--output ko_tmp.tar.gz \
-		https://github.com/ko-build/ko/releases/download/v$(KO_VERSION)/$(KO_RELEASE_ASSET) \
-	&& file ko_tmp.tar.gz | grep --silent gzip \
-	&& mv ko_tmp.tar.gz $@ || (echo "Failed to download ko. Got:"; cat ko_tmp.tar.gz ; echo "" ; exit 1)
+		--output goreleaser_tmp.tar.gz \
+		https://github.com/goreleaser/goreleaser/releases/download/v$(GORELEASER_VERSION)/$(GORELEASER_RELEASE_ASSET) \
+	&& file goreleaser_tmp.tar.gz | grep --silent gzip \
+	&& mv goreleaser_tmp.tar.gz $@ || (echo "Failed to download goreleaser. Got:"; cat goreleaser_tmp.tar.gz ; echo "" ; exit 1)
 
 JOB ?= build
 #: run a CI job in docker locally, set JOB=some-job to override default 'build'

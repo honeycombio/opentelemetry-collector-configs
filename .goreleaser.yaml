@@ -1,0 +1,95 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+builds:
+  - id: otelcol_hny
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+    dir: ./cmd/otelcol_hny
+    binary: otelcol_hny_{{ .Os }}_{{ .Arch }}
+    no_unique_dist_dir: true
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-dev-g{{ .ShortCommit }}"
+
+kos:
+  - id: otelcol_hny
+    repository: ghcr.io/honeycombio/otelcol_hny
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .IsSnapshot }}{{ .Major }}.{{ .Minor }}{{ end }}"
+      - "{{ if not .IsSnapshot }}{{ .Major }}{{ end }}"
+      - "{{ if not .IsSnapshot }}latest{{ else }}dev{{ end }}"
+    base_import_paths: true
+    labels:
+      org.opencontainers.image.source: https://github.com/honeycombio/opentelemetry-collector-configs
+      org.opencontainers.image.licenses: Apache-2.0
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+
+archives:
+  - id: otelcol_hny
+    format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - artifacts/honeycomb-metrics-config.yaml
+
+nfpms:
+  - package_name: otelcol_hny
+    builds:
+      - otelcol_hny
+    vendor: Honeycomb.io
+    maintainer: Honeycomb Engineering <support@honeycomb.io>
+    license: Apache-2.0
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: packaging/fpm/otel-hny-collector.service
+        dst: /etc/systemd/system/otelcol_hny.service
+      - src: packaging/fpm/otel-hny-collector.conf
+        dst: /etc/otelcol_hny/otelcol_hny.conf
+      - src: artifacts/honeycomb-metrics-config.yaml
+        dst: /etc/otelcol_hny/config.yaml
+    scripts:
+      preinstall: packaging/fpm/preinstall.sh
+      postinstall: packaging/fpm/postinstall.sh
+      preremove: packaging/fpm/preuninstall.sh
+
+release:
+  extra_files:
+    - glob: ./artifacts/honeycomb-metrics-config.yaml
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

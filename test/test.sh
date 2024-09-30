@@ -32,7 +32,7 @@ echo -n "running otelcol until we have data..."
 output_line_count () {
   wc -l $output_file | awk '{print $1}'
 }
-./build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) --config $test_config_file >/dev/null 2>&1 &
+./dist/otelcol_hny_$(go env GOOS)_$(go env GOARCH) --config $test_config_file >/dev/null 2>&1 &
 otelcol_pid=$!
 
 while [ $(output_line_count) -lt 1 ]
