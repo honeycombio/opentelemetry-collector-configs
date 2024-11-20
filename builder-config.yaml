@@ -4,7 +4,6 @@ dist:
   description: OpenTelemetry Collector Logging Test Distro
   version: 0.114.0
   output_path: build
-  otelcol_version: 0.114.0
 
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.114.0
