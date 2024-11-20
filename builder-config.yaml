@@ -43,12 +43,12 @@ processors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/probabilisticsamplerprocessor v0.114.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.114.0
   # custom processors below this line
-  - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.114.0
+  # - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.114.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor v0.114.0
 
 connectors:
   - gomod: go.opentelemetry.io/collector/connector/forwardconnector v0.114.0
 
 replaces:
-  - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor => github.com/cartermp/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.0.0-20240715031308-37637b9073ae
+  # - github.com/open-telemetry/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor => github.com/cartermp/opentelemetry-collector-contrib/processor/dynamicsamplingprocessor v0.0.0-20240715031308-37637b9073ae
   - github.com/open-telemetry/opentelemetry-collector-contrib/processor/reduceprocessor => github.com/honeycombio/opentelemetry-collector-contrib/processor/reduceprocessor v0.0.0-20240814205241-d3e3e67cf1b7
