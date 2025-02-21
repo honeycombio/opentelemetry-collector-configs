@@ -4,6 +4,7 @@ package bytecounterprocessor
 
 import (
 	"context"
+	"sync"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/bytecounterprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/component"
@@ -27,17 +28,17 @@ func createDefaultConfig() component.Config {
 
 func createTracesProcessor(
 	ctx context.Context,
-	settings processor.Settings,
+	set processor.Settings,
 	cfg component.Config,
 	nextConsumer consumer.Traces,
 ) (processor.Traces, error) {
-	processor, err := newByteCountProcessor(settings)
+	processor, err := getOrCreateProcessor(set.ID, set)
 	if err != nil {
 		return nil, err
 	}
 	return processorhelper.NewTracesProcessor(
 		ctx,
-		settings,
+		set,
 		cfg,
 		nextConsumer,
 		processor.processTraces,
@@ -46,17 +47,17 @@ func createTracesProcessor(
 
 func createMetricsProcessor(
 	ctx context.Context,
-	settings processor.Settings,
+	set processor.Settings,
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (processor.Metrics, error) {
-	processor, err := newByteCountProcessor(settings)
+	processor, err := getOrCreateProcessor(set.ID, set)
 	if err != nil {
 		return nil, err
 	}
 	return processorhelper.NewMetricsProcessor(
 		ctx,
-		settings,
+		set,
 		cfg,
 		nextConsumer,
 		processor.processMetrics,
@@ -65,19 +66,39 @@ func createMetricsProcessor(
 
 func createLogsProcessor(
 	ctx context.Context,
-	settings processor.Settings,
+	set processor.Settings,
 	cfg component.Config,
 	nextConsumer consumer.Logs,
 ) (processor.Logs, error) {
-	processor, err := newByteCountProcessor(settings)
+	processor, err := getOrCreateProcessor(set.ID, set)
 	if err != nil {
 		return nil, err
 	}
 	return processorhelper.NewLogsProcessor(
 		ctx,
-		settings,
+		set,
 		cfg,
 		nextConsumer,
 		processor.processLogs,
 	)
+}
+
+var processorsMap = map[component.ID]*byteCounterProcessor{}
+var processorsMux = sync.Mutex{}
+
+func getOrCreateProcessor(id component.ID, settings processor.Settings) (*byteCounterProcessor, error) {
+	processorsMux.Lock()
+	defer processorsMux.Unlock()
+
+	if processor, ok := processorsMap[id]; ok {
+		return processor, nil
+	}
+
+	processor, err := newByteCountProcessor(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	processorsMap[id] = processor
+	return processor, nil
 }
