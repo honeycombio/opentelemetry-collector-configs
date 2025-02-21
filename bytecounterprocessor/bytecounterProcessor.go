@@ -2,7 +2,6 @@ package bytecounterprocessor
 
 import (
 	"context"
-	"unsafe"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/bytecounterprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/pdata/plog"
@@ -26,20 +25,20 @@ func newByteCountProcessor(settings processor.Settings) (*bytecounterProcessor, 
 	}, nil
 }
 
-func (bcp *bytecounterProcessor) processTraces(ctx context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
-	byteCount := unsafe.Sizeof(tracesData)
-	bcp.telemetryBuilder.TracesBytesCount.Add(ctx, int64(byteCount))
+func (p *bytecounterProcessor) processTraces(ctx context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
+	m := ptrace.ProtoMarshaler{}
+	p.telemetryBuilder.TracesBytesCount.Add(ctx, int64(m.TracesSize(tracesData)))
 	return tracesData, nil
 }
 
-func (bcp *bytecounterProcessor) processMetrics(ctx context.Context, metricsData pmetric.Metrics) (pmetric.Metrics, error) {
-	byteCount := unsafe.Sizeof(metricsData)
-	bcp.telemetryBuilder.MetricsBytesCount.Add(ctx, int64(byteCount))
+func (p *bytecounterProcessor) processMetrics(ctx context.Context, metricsData pmetric.Metrics) (pmetric.Metrics, error) {
+	m := pmetric.ProtoMarshaler{}
+	p.telemetryBuilder.MetricsBytesCount.Add(ctx, int64(m.MetricsSize(metricsData)))
 	return metricsData, nil
 }
 
-func (bcp *bytecounterProcessor) processLogs(ctx context.Context, logsData plog.Logs) (plog.Logs, error) {
-	byteCount := unsafe.Sizeof(logsData)
-	bcp.telemetryBuilder.LogsBytesCount.Add(ctx, int64(byteCount))
+func (p *bytecounterProcessor) processLogs(ctx context.Context, logsData plog.Logs) (plog.Logs, error) {
+	m := plog.ProtoMarshaler{}
+	p.telemetryBuilder.LogsBytesCount.Add(ctx, int64(m.LogsSize(logsData)))
 	return logsData, nil
 }
