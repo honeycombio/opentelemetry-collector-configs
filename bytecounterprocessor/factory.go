@@ -5,6 +5,7 @@ package bytecounterprocessor
 import (
 	"context"
 
+	"github.com/honeycombio/opentelemetry-collector-configs/bytecounterprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/processor"
@@ -13,7 +14,7 @@ import (
 
 func NewFactory() processor.Factory {
 	return processor.NewFactory(
-		component.MustNewType("byte_count"),
+		metadata.Type,
 		createDefaultConfig,
 		processor.WithTraces(createTracesProcessor, component.StabilityLevelDevelopment),
 		processor.WithMetrics(createMetricsProcessor, component.StabilityLevelDevelopment),
