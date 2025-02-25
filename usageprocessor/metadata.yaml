@@ -11,27 +11,3 @@ status:
 
 tests:
   config:
-
-telemetry:
-  metrics:
-    traces_bytes_count:
-      enabled: true
-      description: Count of traces bytes processed by the processor
-      unit: "1"
-      sum:
-        value_type: int
-        monotonic: true
-    metrics_bytes_count:
-      enabled: true
-      description: Count of metrics bytes processed by the processor
-      unit: "1"
-      sum:
-        value_type: int
-        monotonic: true
-    logs_bytes_count:
-      enabled: true
-      description: Count of logs bytes processed by the processor
-      unit: "1"
-      sum:
-        value_type: int
-        monotonic: true
