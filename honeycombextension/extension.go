@@ -55,6 +55,7 @@ type honeycombExtension struct {
 
 	bytesReceivedData map[signal][]int64
 	bytesReceivedMux  sync.Mutex
+	done              chan struct{}
 
 	telemetryHandler opampcustommessages.CustomCapabilityHandler
 }
@@ -66,7 +67,9 @@ func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Exten
 
 		bytesReceivedData: newBytesReceivedMap(),
 		bytesReceivedMux:  sync.Mutex{},
-		telemetryHandler:  nil,
+		done:              make(chan struct{}),
+
+		telemetryHandler: nil,
 	}, nil
 }
 
@@ -87,7 +90,6 @@ func (h *honeycombExtension) Start(_ context.Context, host component.Host) error
 		if err != nil {
 			return fmt.Errorf("failed to register custom capability: %w", err)
 		}
-		// TODO: I am pretty sure this needs deregistered in the Shutdown function
 		h.telemetryHandler = handler
 
 		go h.reportUsage()
@@ -97,6 +99,10 @@ func (h *honeycombExtension) Start(_ context.Context, host component.Host) error
 
 // Shutdown ends the extension's processing.
 func (h *honeycombExtension) Shutdown(context.Context) error {
+	close(h.done)
+	if h.telemetryHandler != nil {
+		h.telemetryHandler.Unregister()
+	}
 	return nil
 }
 
@@ -118,13 +124,14 @@ func (h *honeycombExtension) RecordLogsBytesReceived(v int64) {
 	h.bytesReceivedMux.Unlock()
 }
 
-// TODO: this needs to have a clean shutdown
 func (h *honeycombExtension) reportUsage() {
 	t := time.NewTicker(time.Second * 30)
 	defer t.Stop()
 
 	for {
 		select {
+		case <-h.done:
+			return
 		case <-t.C:
 			data, err := h.createUsageReport()
 			if err != nil {
@@ -146,8 +153,6 @@ func (h *honeycombExtension) reportUsage() {
 	}
 }
 
-// TODO: add logic to "pop" all datapoints from the map and create the proper message payload.
-// https://github.com/honeycombio/refinery/tree/yingrong/refinery_opamp_bytes_received has an example payload.
 func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	// get a copy of the data and clear the map
 	h.bytesReceivedMux.Lock()
