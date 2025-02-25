@@ -6,13 +6,12 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
-	"go.opentelemetry.io/collector/processor"
 )
 
 type usageProcessor struct {
 }
 
-func newUsageProcessor(settings processor.Settings) (*usageProcessor, error) {
+func newUsageProcessor() (*usageProcessor, error) {
 	return &usageProcessor{}, nil
 }
 

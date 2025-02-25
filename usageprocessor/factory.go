@@ -32,7 +32,7 @@ func createTracesProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Traces,
 ) (processor.Traces, error) {
-	processor, err := getOrCreateProcessor(set.ID, set)
+	processor, err := getOrCreateProcessor(set.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func createMetricsProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (processor.Metrics, error) {
-	processor, err := getOrCreateProcessor(set.ID, set)
+	processor, err := getOrCreateProcessor(set.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func createLogsProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Logs,
 ) (processor.Logs, error) {
-	processor, err := getOrCreateProcessor(set.ID, set)
+	processor, err := getOrCreateProcessor(set.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func createLogsProcessor(
 var processorsMap = map[component.ID]*usageProcessor{}
 var processorsMux = sync.Mutex{}
 
-func getOrCreateProcessor(id component.ID, settings processor.Settings) (*usageProcessor, error) {
+func getOrCreateProcessor(id component.ID) (*usageProcessor, error) {
 	processorsMux.Lock()
 	defer processorsMux.Unlock()
 
@@ -94,7 +94,7 @@ func getOrCreateProcessor(id component.ID, settings processor.Settings) (*usageP
 		return processor, nil
 	}
 
-	processor, err := newUsageProcessor(settings)
+	processor, err := newUsageProcessor()
 	if err != nil {
 		return nil, err
 	}
