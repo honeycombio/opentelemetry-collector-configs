@@ -78,6 +78,7 @@ func (h *honeycombExtension) Start(_ context.Context, host component.Host) error
 		if err != nil {
 			return fmt.Errorf("failed to register custom capability: %w", err)
 		}
+		// TODO: I am pretty sure this needs deregistered in the Shutdown function
 		h.telemetryHandler = handler
 
 		go h.reportUsage()
