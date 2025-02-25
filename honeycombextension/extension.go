@@ -11,6 +11,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/extension"
+	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.uber.org/zap"
 )
 
@@ -120,7 +121,13 @@ func (h *honeycombExtension) reportUsage() {
 	for {
 		select {
 		case <-t.C:
-			sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, h.generatePayload())
+			data, err := h.createUsageReport()
+			if err != nil {
+				h.set.Logger.Error("failed to generate payload", zap.Error(err))
+				continue
+			}
+
+			sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, data)
 			switch {
 			case err == nil:
 				break
@@ -136,6 +143,37 @@ func (h *honeycombExtension) reportUsage() {
 
 // TODO: add logic to "pop" all datapoints from the map and create the proper message payload.
 // https://github.com/honeycombio/refinery/tree/yingrong/refinery_opamp_bytes_received has an example payload.
-func (h *honeycombExtension) generatePayload() []byte {
-	return nil
+func (h *honeycombExtension) createUsageReport() ([]byte, error) {
+	// get a copy of the data and clear the map
+	h.bytesReceivedMux.Lock()
+	usage := h.bytesReceivedData
+	h.bytesReceivedData = map[signal][]int64{}
+	h.bytesReceivedMux.Unlock()
+
+	// create the metrics payload
+	metrics := pmetric.NewMetrics()
+	rm := metrics.ResourceMetrics().AppendEmpty()
+	// TODO: add resource attributes?
+	sm := rm.ScopeMetrics().AppendEmpty()
+	metric := sm.Metrics().AppendEmpty()
+	metric.SetName("bytes_received")
+	sum := metric.SetEmptySum()
+	sum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
+
+	for signal, dps := range usage {
+		for _, v := range dps {
+			dp := sum.DataPoints().AppendEmpty()
+			dp.Attributes().PutStr("signal", string(signal))
+			dp.SetIntValue(v)
+		}
+	}
+
+	// marshal the metrics into a byte slice
+	marshaller := pmetric.JSONMarshaler{}
+	data, err := marshaller.MarshalMetrics(metrics)
+	if err != nil {
+		h.set.Logger.Error("failed to marshal metrics", zap.Error(err))
+		return nil, err
+	}
+	return data, nil
 }
