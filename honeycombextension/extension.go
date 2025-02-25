@@ -15,6 +15,11 @@ import (
 	"go.uber.org/zap"
 )
 
+var (
+	unset      component.ID
+	marshaller = pmetric.JSONMarshaler{}
+)
+
 // TODO: think about the best way to expose this capability to the processors.
 //   - Would it be better to make a generic function and the processor passes in options or something
 //
@@ -36,6 +41,14 @@ const (
 	logs    = signal("logs")
 )
 
+func newBytesReceivedMap() map[signal][]int64 {
+	return map[signal][]int64{
+		traces:  make([]int64, 0),
+		metrics: make([]int64, 0),
+		logs:    make([]int64, 0),
+	}
+}
+
 type honeycombExtension struct {
 	config *Config
 	set    extension.Settings
@@ -51,19 +64,11 @@ func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Exten
 		config: cfg,
 		set:    set,
 
-		bytesReceivedData: map[signal][]int64{
-			traces:  make([]int64, 0),
-			metrics: make([]int64, 0),
-			logs:    make([]int64, 0),
-		},
-		bytesReceivedMux: sync.Mutex{},
-		telemetryHandler: nil,
+		bytesReceivedData: newBytesReceivedMap(),
+		bytesReceivedMux:  sync.Mutex{},
+		telemetryHandler:  nil,
 	}, nil
 }
-
-var (
-	unset component.ID
-)
 
 // Start begins the extension's processing.
 func (h *honeycombExtension) Start(_ context.Context, host component.Host) error {
@@ -147,12 +152,12 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	// get a copy of the data and clear the map
 	h.bytesReceivedMux.Lock()
 	usage := h.bytesReceivedData
-	h.bytesReceivedData = map[signal][]int64{}
+	h.bytesReceivedData = newBytesReceivedMap()
 	h.bytesReceivedMux.Unlock()
 
 	// create the metrics payload
-	metrics := pmetric.NewMetrics()
-	rm := metrics.ResourceMetrics().AppendEmpty()
+	m := pmetric.NewMetrics()
+	rm := m.ResourceMetrics().AppendEmpty()
 	// TODO: add resource attributes?
 	sm := rm.ScopeMetrics().AppendEmpty()
 	metric := sm.Metrics().AppendEmpty()
@@ -160,17 +165,18 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	sum := metric.SetEmptySum()
 	sum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 
-	for signal, dps := range usage {
+	for s, dps := range usage {
+		// TODO: Should we do some summing here so our payload is smaller and so papi has to do less?
 		for _, v := range dps {
 			dp := sum.DataPoints().AppendEmpty()
-			dp.Attributes().PutStr("signal", string(signal))
+			dp.Attributes().PutStr("signal", string(s))
 			dp.SetIntValue(v)
 		}
 	}
 
 	// marshal the metrics into a byte slice
-	marshaller := pmetric.JSONMarshaler{}
-	data, err := marshaller.MarshalMetrics(metrics)
+	// TODO: if this marshal fails, we'll lose all the data we grabbed at the beginning of the function. Should we deal with that?
+	data, err := marshaller.MarshalMetrics(m)
 	if err != nil {
 		h.set.Logger.Error("failed to marshal metrics", zap.Error(err))
 		return nil, err
