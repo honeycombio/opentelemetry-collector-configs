@@ -27,6 +27,9 @@ type HoneycombUsageRecorder interface {
 type signal string
 
 const (
+	// reportUsageMessageType is the message type for the reportUsage custom message sent over opamp.
+	reportUsageMessageType = "reportUsage"
+
 	traces  = signal("traces")
 	metrics = signal("metrics")
 	logs    = signal("logs")
@@ -117,7 +120,7 @@ func (h *honeycombExtension) reportUsage() {
 	for {
 		select {
 		case <-t.C:
-			sendingChan, err := h.telemetryHandler.SendMessage("IDK what this value should be yet", h.generatePayload())
+			sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, h.generatePayload())
 			switch {
 			case err == nil:
 				break
