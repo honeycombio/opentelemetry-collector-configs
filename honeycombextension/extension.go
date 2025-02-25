@@ -14,6 +14,10 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: think about the best way to expose this capability to the processors.
+//   - Would it be better to make a generic function and the processor passes in options or something
+//
+// that identify the metrics and/or its attributes?
 type HoneycombUsageRecorder interface {
 	RecordTracesBytesReceived(int64)
 	RecordMetricsBytesReceived(int64)
@@ -126,7 +130,8 @@ func (h *honeycombExtension) reportUsage() {
 	}
 }
 
-// TODO: add logic to "pop" all datapoints from the map and create the proper message payload. Can use refinery as example payload
+// TODO: add logic to "pop" all datapoints from the map and create the proper message payload.
+// https://github.com/honeycombio/refinery/tree/yingrong/refinery_opamp_bytes_received has an example payload.
 func (h *honeycombExtension) generatePayload() []byte {
 	return nil
 }
