@@ -1,12 +1,12 @@
 //go:generate mdatagen metadata.yaml
 
-package bytecounterprocessor
+package usageprocessor
 
 import (
 	"context"
 	"sync"
 
-	"github.com/honeycombio/opentelemetry-collector-configs/bytecounterprocessor/internal/metadata"
+	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/processor"
@@ -83,10 +83,10 @@ func createLogsProcessor(
 	)
 }
 
-var processorsMap = map[component.ID]*byteCounterProcessor{}
+var processorsMap = map[component.ID]*usageProcessor{}
 var processorsMux = sync.Mutex{}
 
-func getOrCreateProcessor(id component.ID, settings processor.Settings) (*byteCounterProcessor, error) {
+func getOrCreateProcessor(id component.ID, settings processor.Settings) (*usageProcessor, error) {
 	processorsMux.Lock()
 	defer processorsMux.Unlock()
 
@@ -94,7 +94,7 @@ func getOrCreateProcessor(id component.ID, settings processor.Settings) (*byteCo
 		return processor, nil
 	}
 
-	processor, err := newByteCountProcessor(settings)
+	processor, err := newUsageProcessor(settings)
 	if err != nil {
 		return nil, err
 	}

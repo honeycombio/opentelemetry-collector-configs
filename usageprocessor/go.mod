@@ -1,4 +1,4 @@
-module github.com/honeycombio/opentelemetry-collector-configs/bytecounterprocessor
+module github.com/honeycombio/opentelemetry-collector-configs/usageprocessor
 
 go 1.21.0
 

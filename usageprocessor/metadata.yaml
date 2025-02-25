@@ -1,5 +1,5 @@
-type: bytecounter
-scope_name: otelcol/bytecounter
+type: usage
+scope_name: otelcol/usage
 
 status:
   class: processor

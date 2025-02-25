@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	Type      = component.MustNewType("bytecounter")
-	ScopeName = "otelcol/bytecounter"
+	Type      = component.MustNewType("usage")
+	ScopeName = "otelcol/usage"
 )
 
 const (
