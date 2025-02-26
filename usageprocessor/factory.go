@@ -42,6 +42,7 @@ func createTracesProcessor(
 		cfg,
 		nextConsumer,
 		processor.processTraces,
+		processorhelper.WithStart(processor.Start),
 	)
 }
 
@@ -61,6 +62,7 @@ func createMetricsProcessor(
 		cfg,
 		nextConsumer,
 		processor.processMetrics,
+		processorhelper.WithStart(processor.Start),
 	)
 }
 
@@ -80,6 +82,7 @@ func createLogsProcessor(
 		cfg,
 		nextConsumer,
 		processor.processLogs,
+		processorhelper.WithStart(processor.Start),
 	)
 }
 
