@@ -1,0 +1,12 @@
+type: honeycomb
+
+status:
+  class: extension
+  stability:
+    development: [extension]
+  codeowners:
+    active: []
+
+
+tests:
+  config:
