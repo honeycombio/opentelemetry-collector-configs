@@ -11,7 +11,9 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/extension"
+	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
+	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 )
 
@@ -25,9 +27,9 @@ var (
 //
 // that identify the metrics and/or its attributes?
 type HoneycombUsageRecorder interface {
-	RecordTracesBytesReceived(int64)
-	RecordMetricsBytesReceived(int64)
-	RecordLogsBytesReceived(int64)
+	RecordTracesUsage(ptrace.Traces)
+	RecordMetricsUsage(pmetric.Metrics)
+	RecordLogsUsage(plog.Logs)
 }
 
 type signal string
@@ -59,6 +61,9 @@ type honeycombExtension struct {
 
 	telemetryHandler opampcustommessages.CustomCapabilityHandler
 }
+
+var _ extension.Extension = (*honeycombExtension)(nil)
+var _ HoneycombUsageRecorder = (*honeycombExtension)(nil)
 
 func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Extension, error) {
 	return &honeycombExtension{
@@ -106,21 +111,30 @@ func (h *honeycombExtension) Shutdown(context.Context) error {
 	return nil
 }
 
-func (h *honeycombExtension) RecordTracesBytesReceived(v int64) {
+func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
+	m := ptrace.ProtoMarshaler{}
+	size := m.TracesSize(td)
+
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], v)
+	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], int64(size))
 	h.bytesReceivedMux.Unlock()
 }
 
-func (h *honeycombExtension) RecordMetricsBytesReceived(v int64) {
+func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
+	m := pmetric.ProtoMarshaler{}
+	size := m.MetricsSize(md)
+
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], v)
+	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], int64(size))
 	h.bytesReceivedMux.Unlock()
 }
 
-func (h *honeycombExtension) RecordLogsBytesReceived(v int64) {
+func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
+	m := plog.ProtoMarshaler{}
+	size := m.LogsSize(ld)
+
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], v)
+	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], int64(size))
 	h.bytesReceivedMux.Unlock()
 }
 
