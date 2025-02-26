@@ -80,15 +80,15 @@ func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Exten
 
 // Start begins the extension's processing.
 func (h *honeycombExtension) Start(_ context.Context, host component.Host) error {
-	if h.config.opampExtensionID != unset {
-		ext, ok := host.GetExtensions()[h.config.opampExtensionID]
+	if h.config.OpAMPExtensionID != unset {
+		ext, ok := host.GetExtensions()[h.config.OpAMPExtensionID]
 		if !ok {
-			return fmt.Errorf("extension %q does not exist", h.config.opampExtensionID.String())
+			return fmt.Errorf("extension %q does not exist", h.config.OpAMPExtensionID.String())
 		}
 
 		registry, ok := ext.(opampcustommessages.CustomCapabilityRegistry)
 		if !ok {
-			return fmt.Errorf("extension %q is not a custom message registry", h.config.opampExtensionID.String())
+			return fmt.Errorf("extension %q is not a custom message registry", h.config.OpAMPExtensionID.String())
 		}
 
 		handler, err := registry.Register("io.honeycomb.capabilities.sendAgentTelemetry")
