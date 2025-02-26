@@ -1,0 +1,13 @@
+type: usage
+scope_name: otelcol/usage
+
+status:
+  class: processor
+  stability:
+    development: [traces, metrics, logs]
+  distributions: []
+  codeowners:
+    active: []
+
+tests:
+  config:
