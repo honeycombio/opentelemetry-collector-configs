@@ -4,7 +4,6 @@ package usageprocessor
 
 import (
 	"context"
-	"sync"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/component"
@@ -32,7 +31,8 @@ func createTracesProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Traces,
 ) (processor.Traces, error) {
-	processor, err := getOrCreateProcessor(set.ID)
+	oCfg := cfg.(*Config)
+	proc, err := newUsageProcessor(oCfg, set)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func createTracesProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processTraces,
+		proc.processTraces,
 	)
 }
 
@@ -51,7 +51,8 @@ func createMetricsProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (processor.Metrics, error) {
-	processor, err := getOrCreateProcessor(set.ID)
+	oCfg := cfg.(*Config)
+	proc, err := newUsageProcessor(oCfg, set)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func createMetricsProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processMetrics,
+		proc.processMetrics,
 	)
 }
 
@@ -70,7 +71,8 @@ func createLogsProcessor(
 	cfg component.Config,
 	nextConsumer consumer.Logs,
 ) (processor.Logs, error) {
-	processor, err := getOrCreateProcessor(set.ID)
+	oCfg := cfg.(*Config)
+	proc, err := newUsageProcessor(oCfg, set)
 	if err != nil {
 		return nil, err
 	}
@@ -79,26 +81,6 @@ func createLogsProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processLogs,
+		proc.processLogs,
 	)
-}
-
-var processorsMap = map[component.ID]*usageProcessor{}
-var processorsMux = sync.Mutex{}
-
-func getOrCreateProcessor(id component.ID) (*usageProcessor, error) {
-	processorsMux.Lock()
-	defer processorsMux.Unlock()
-
-	if processor, ok := processorsMap[id]; ok {
-		return processor, nil
-	}
-
-	processor, err := newUsageProcessor()
-	if err != nil {
-		return nil, err
-	}
-
-	processorsMap[id] = processor
-	return processor, nil
 }

@@ -6,13 +6,19 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.opentelemetry.io/collector/processor"
 )
 
 type usageProcessor struct {
+	config *Config
+	set    processor.Settings
 }
 
-func newUsageProcessor() (*usageProcessor, error) {
-	return &usageProcessor{}, nil
+func newUsageProcessor(config *Config, set processor.Settings) (*usageProcessor, error) {
+	return &usageProcessor{
+		config: config,
+		set:    set,
+	}, nil
 }
 
 func (p *usageProcessor) processTraces(ctx context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
