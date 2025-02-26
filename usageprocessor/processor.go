@@ -25,7 +25,7 @@ type usageProcessor struct {
 func newUsageProcessor(logger *zap.Logger, cfg *Config) (*usageProcessor, error) {
 	return &usageProcessor{
 		logger:      logger,
-		extensionID: cfg.honeycombExtensionID,
+		extensionID: cfg.HoneycombExtensionID,
 	}, nil
 }
 
