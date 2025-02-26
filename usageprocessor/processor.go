@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.uber.org/zap"
 )
 
 var (
@@ -16,41 +17,53 @@ var (
 )
 
 type usageProcessor struct {
-	config   *Config
-	recorder hnyext.HoneycombUsageRecorder
+	logger      *zap.Logger
+	extensionID component.ID
+	recorder    hnyext.HoneycombUsageRecorder
 }
 
-func newUsageProcessor() (*usageProcessor, error) {
-	return &usageProcessor{}, nil
+func newUsageProcessor(logger *zap.Logger, cfg *Config) (*usageProcessor, error) {
+	return &usageProcessor{
+		logger:      logger,
+		extensionID: cfg.honeycombExtensionID,
+	}, nil
 }
 
 func (p *usageProcessor) Start(ctx context.Context, host component.Host) error {
-	if p.config.honeycombExtensionID != unset {
-		ext := host.GetExtensions()[p.config.honeycombExtensionID]
+	if p.extensionID != unset {
+		ext := host.GetExtensions()[p.extensionID]
 		if ext == nil {
-			return fmt.Errorf("extension %q does not exist", p.config.honeycombExtensionID.String())
+			return fmt.Errorf("extension %q does not exist", p.extensionID.String())
 		}
 
 		recorder, ok := ext.(hnyext.HoneycombUsageRecorder)
 		if !ok {
-			return fmt.Errorf("extension %q does not implement HoneycombUsageRecorder", p.config.honeycombExtensionID.String())
+			return fmt.Errorf("extension %q does not implement HoneycombUsageRecorder", p.extensionID.String())
 		}
 		p.recorder = recorder
+	} else {
+		p.logger.Warn("No Honeycomb extension ID set, usage data will not be recorded")
 	}
 	return nil
 }
 
 func (p *usageProcessor) processTraces(ctx context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
-	p.recorder.RecordTracesUsage(tracesData)
+	if p.recorder != nil {
+		p.recorder.RecordTracesUsage(tracesData)
+	}
 	return tracesData, nil
 }
 
 func (p *usageProcessor) processMetrics(ctx context.Context, metricsData pmetric.Metrics) (pmetric.Metrics, error) {
-	p.recorder.RecordMetricsUsage(metricsData)
+	if p.recorder != nil {
+		p.recorder.RecordMetricsUsage(metricsData)
+	}
 	return metricsData, nil
 }
 
 func (p *usageProcessor) processLogs(ctx context.Context, logsData plog.Logs) (plog.Logs, error) {
-	p.recorder.RecordLogsUsage(logsData)
+	if p.recorder != nil {
+		p.recorder.RecordLogsUsage(logsData)
+	}
 	return logsData, nil
 }
