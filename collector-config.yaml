@@ -1,0 +1,29 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: localhost:4317
+
+processors:
+  usage:
+
+exporters:
+  debug:
+
+extensions:
+  honeycomb:
+  opamp:
+    server:
+      ws:
+        endpoint: ws://127.0.0.1:4320/v1/opamp
+
+service:
+  extensions: [honeycomb, opamp]
+  pipelines:
+    traces:
+      receivers:
+      - otlp
+      processors:
+      - usage
+      exporters:
+      - debug
