@@ -9,6 +9,7 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
+	"go.opentelemetry.io/collector/processor"
 	"go.uber.org/zap"
 )
 
@@ -17,28 +18,28 @@ var (
 )
 
 type usageProcessor struct {
-	logger      *zap.Logger
-	extensionID component.ID
-	recorder    hnyext.HoneycombUsageRecorder
+	logger   *zap.Logger
+	config   *Config
+	recorder hnyext.HoneycombUsageRecorder
 }
 
-func newUsageProcessor(logger *zap.Logger, cfg *Config) (*usageProcessor, error) {
+func newUsageProcessor(settings processor.Settings, cfg *Config) (*usageProcessor, error) {
 	return &usageProcessor{
-		logger:      logger,
-		extensionID: cfg.HoneycombExtensionID,
+		logger: settings.Logger,
+		config: cfg,
 	}, nil
 }
 
 func (p *usageProcessor) Start(ctx context.Context, host component.Host) error {
-	if p.extensionID != unset {
-		ext := host.GetExtensions()[p.extensionID]
+	if p.config.HoneycombExtensionID != unset {
+		ext := host.GetExtensions()[p.config.HoneycombExtensionID]
 		if ext == nil {
-			return fmt.Errorf("extension %q does not exist", p.extensionID.String())
+			return fmt.Errorf("extension %q does not exist", p.config.HoneycombExtensionID.String())
 		}
 
 		recorder, ok := ext.(hnyext.HoneycombUsageRecorder)
 		if !ok {
-			return fmt.Errorf("extension %q does not implement HoneycombUsageRecorder", p.extensionID.String())
+			return fmt.Errorf("extension %q does not implement HoneycombUsageRecorder", p.config.HoneycombExtensionID.String())
 		}
 		p.recorder = recorder
 	} else {

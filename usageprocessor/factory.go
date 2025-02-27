@@ -4,7 +4,6 @@ package usageprocessor
 
 import (
 	"context"
-	"sync"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor/internal/metadata"
 	"go.opentelemetry.io/collector/component"
@@ -33,7 +32,7 @@ func createTracesProcessor(
 	nextConsumer consumer.Traces,
 ) (processor.Traces, error) {
 	oCfg := cfg.(*Config)
-	processor, err := getOrCreateProcessor(set, oCfg)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +41,8 @@ func createTracesProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processTraces,
-		processorhelper.WithStart(processor.Start),
+		proc.processTraces,
+		processorhelper.WithStart(proc.Start),
 	)
 }
 
@@ -54,7 +53,7 @@ func createMetricsProcessor(
 	nextConsumer consumer.Metrics,
 ) (processor.Metrics, error) {
 	oCfg := cfg.(*Config)
-	processor, err := getOrCreateProcessor(set, oCfg)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +62,8 @@ func createMetricsProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processMetrics,
-		processorhelper.WithStart(processor.Start),
+		proc.processMetrics,
+		processorhelper.WithStart(proc.Start),
 	)
 }
 
@@ -75,7 +74,7 @@ func createLogsProcessor(
 	nextConsumer consumer.Logs,
 ) (processor.Logs, error) {
 	oCfg := cfg.(*Config)
-	processor, err := getOrCreateProcessor(set, oCfg)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -84,27 +83,7 @@ func createLogsProcessor(
 		set,
 		cfg,
 		nextConsumer,
-		processor.processLogs,
-		processorhelper.WithStart(processor.Start),
+		proc.processLogs,
+		processorhelper.WithStart(proc.Start),
 	)
-}
-
-var processorsMap = map[component.ID]*usageProcessor{}
-var processorsMux = sync.Mutex{}
-
-func getOrCreateProcessor(settings processor.Settings, config *Config) (*usageProcessor, error) {
-	processorsMux.Lock()
-	defer processorsMux.Unlock()
-
-	if processor, ok := processorsMap[settings.ID]; ok {
-		return processor, nil
-	}
-
-	processor, err := newUsageProcessor(settings.Logger, config)
-	if err != nil {
-		return nil, err
-	}
-
-	processorsMap[settings.ID] = processor
-	return processor, nil
 }
