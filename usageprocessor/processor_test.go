@@ -38,7 +38,7 @@ func newInMemoryRecorder() *inMemoryRecorder {
 	}
 }
 
-func TestProcessorPassesRequestsToRecorder(t *testing.T) {
+func TestProcessorPassesTracesToRecorder(t *testing.T) {
 	recorder := newInMemoryRecorder()
 	processor := &usageProcessor{
 		recorder: recorder,
