@@ -3,6 +3,7 @@ module github.com/honeycombio/opentelemetry-collector-configs/honeycombextension
 go 1.23.0
 
 require (
+	github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.1.0
 	github.com/open-telemetry/opamp-go v0.19.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages v0.120.1
 	github.com/stretchr/testify v1.10.0
@@ -33,6 +34,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
+	go.opentelemetry.io/collector/consumer v1.26.0 // indirect
+	go.opentelemetry.io/collector/pipeline v0.120.0 // indirect
+	go.opentelemetry.io/collector/processor v0.120.0 // indirect
 	go.opentelemetry.io/otel v1.34.0 // indirect
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
@@ -47,3 +51,5 @@ require (
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/honeycombio/opentelemetry-collector-configs/usageprocessor => ../usageprocessor

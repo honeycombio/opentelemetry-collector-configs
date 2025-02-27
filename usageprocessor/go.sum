@@ -40,10 +40,6 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
-github.com/open-telemetry/opamp-go v0.19.0 h1:8LvQKDwqi+BU3Yy159SU31e2XB0vgnk+PN45pnKilPs=
-github.com/open-telemetry/opamp-go v0.19.0/go.mod h1:9/1G6T5dnJz4cJtoYSr6AX18kHdOxnxxETJPZSHyEUg=
-github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages v0.120.1 h1:P7LlEfOPfm1DYyHSwUZY5PoJIVvTTH838s84UsGXrRI=
-github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages v0.120.1/go.mod h1:zq/6dypyJvRnJ0XQt90xeqzih4HVcogJw0cmJ22E91Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.13.1 h1:KvO1DLK/DRN07sQ1LQKScxyZJuNnedQ5/wKSR38lUII=
@@ -70,10 +66,6 @@ go.opentelemetry.io/collector/consumer/consumertest v0.120.0 h1:iPFmXygDsDOjqwdQ
 go.opentelemetry.io/collector/consumer/consumertest v0.120.0/go.mod h1:HeSnmPfAEBnjsRR5UY1fDTLlSrYsMsUjufg1ihgnFJ0=
 go.opentelemetry.io/collector/consumer/xconsumer v0.120.0 h1:dzM/3KkFfMBIvad+NVXDV+mA+qUpHyu5c70TFOjDg68=
 go.opentelemetry.io/collector/consumer/xconsumer v0.120.0/go.mod h1:eOf7RX9CYC7bTZQFg0z2GHdATpQDxI0DP36F9gsvXOQ=
-go.opentelemetry.io/collector/extension v0.120.0 h1:CA2e6jF5Sz6PE+yxGbJUn0QTMwTo28MO8FNBhdKAABw=
-go.opentelemetry.io/collector/extension v0.120.0/go.mod h1:o2/Kk61I1G9XOdD8W4Tbrg05jD4P/QF0ecxYTcT8OZ8=
-go.opentelemetry.io/collector/extension/extensiontest v0.120.0 h1:DSN2cuuQ+CUVEgEStX04lG4rg/6oZeM2zyeX5wXeGWg=
-go.opentelemetry.io/collector/extension/extensiontest v0.120.0/go.mod h1:MTFigcQ7hblDUv12b3RbfYvtmzUNZzLiDoug11ezJWQ=
 go.opentelemetry.io/collector/pdata v1.26.0 h1:o7nP0RTQOG0LXk55ZZjLrxwjX8x3wHF7Z7xPeOaskEA=
 go.opentelemetry.io/collector/pdata v1.26.0/go.mod h1:18e8/xDZsqyj00h/5HM5GLdJgBzzG9Ei8g9SpNoiMtI=
 go.opentelemetry.io/collector/pdata/pprofile v0.120.0 h1:lQl74z41MN9a0M+JFMZbJVesjndbwHXwUleVrVcTgc8=

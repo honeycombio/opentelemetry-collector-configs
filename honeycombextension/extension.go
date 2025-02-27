@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor"
 	"github.com/open-telemetry/opamp-go/client/types"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"go.opentelemetry.io/collector/component"
@@ -21,16 +22,6 @@ var (
 	unset      component.ID
 	marshaller = pmetric.JSONMarshaler{}
 )
-
-// TODO: think about the best way to expose this capability to the processors.
-//   - Would it be better to make a generic function and the processor passes in options or something
-//
-// that identify the metrics and/or its attributes?
-type HoneycombUsageRecorder interface {
-	RecordTracesUsage(ptrace.Traces)
-	RecordMetricsUsage(pmetric.Metrics)
-	RecordLogsUsage(plog.Logs)
-}
 
 type signal string
 
@@ -63,7 +54,7 @@ type honeycombExtension struct {
 }
 
 var _ extension.Extension = (*honeycombExtension)(nil)
-var _ HoneycombUsageRecorder = (*honeycombExtension)(nil)
+var _ usageprocessor.HoneycombUsageRecorder = (*honeycombExtension)(nil)
 
 func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Extension, error) {
 	return &honeycombExtension{

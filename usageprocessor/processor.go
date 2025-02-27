@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	hnyext "github.com/honeycombio/opentelemetry-collector-configs/honeycombextension"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
@@ -20,7 +19,7 @@ var (
 type usageProcessor struct {
 	logger   *zap.Logger
 	config   *Config
-	recorder hnyext.HoneycombUsageRecorder
+	recorder HoneycombUsageRecorder
 }
 
 func newUsageProcessor(settings processor.Settings, cfg *Config) (*usageProcessor, error) {
@@ -37,7 +36,7 @@ func (p *usageProcessor) Start(ctx context.Context, host component.Host) error {
 			return fmt.Errorf("extension %q does not exist", p.config.HoneycombExtensionID.String())
 		}
 
-		recorder, ok := ext.(hnyext.HoneycombUsageRecorder)
+		recorder, ok := ext.(HoneycombUsageRecorder)
 		if !ok {
 			return fmt.Errorf("extension %q does not implement HoneycombUsageRecorder", p.config.HoneycombExtensionID.String())
 		}
