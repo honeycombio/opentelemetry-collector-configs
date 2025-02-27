@@ -32,16 +32,17 @@ func createTracesProcessor(
 	nextConsumer consumer.Traces,
 ) (processor.Traces, error) {
 	oCfg := cfg.(*Config)
-	proc, err := newUsageProcessor(oCfg, set)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
-	return processorhelper.NewTracesProcessor(
+	return processorhelper.NewTraces(
 		ctx,
 		set,
 		cfg,
 		nextConsumer,
 		proc.processTraces,
+		processorhelper.WithStart(proc.Start),
 	)
 }
 
@@ -52,16 +53,17 @@ func createMetricsProcessor(
 	nextConsumer consumer.Metrics,
 ) (processor.Metrics, error) {
 	oCfg := cfg.(*Config)
-	proc, err := newUsageProcessor(oCfg, set)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
-	return processorhelper.NewMetricsProcessor(
+	return processorhelper.NewMetrics(
 		ctx,
 		set,
 		cfg,
 		nextConsumer,
 		proc.processMetrics,
+		processorhelper.WithStart(proc.Start),
 	)
 }
 
@@ -72,15 +74,16 @@ func createLogsProcessor(
 	nextConsumer consumer.Logs,
 ) (processor.Logs, error) {
 	oCfg := cfg.(*Config)
-	proc, err := newUsageProcessor(oCfg, set)
+	proc, err := newUsageProcessor(set, oCfg)
 	if err != nil {
 		return nil, err
 	}
-	return processorhelper.NewLogsProcessor(
+	return processorhelper.NewLogs(
 		ctx,
 		set,
 		cfg,
 		nextConsumer,
 		proc.processLogs,
+		processorhelper.WithStart(proc.Start),
 	)
 }

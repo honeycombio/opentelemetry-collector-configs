@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor"
 	"github.com/open-telemetry/opamp-go/client/types"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"go.opentelemetry.io/collector/component"
@@ -18,19 +19,16 @@ import (
 )
 
 var (
-	unset      component.ID
-	marshaller = pmetric.JSONMarshaler{}
-)
+	unset component.ID
 
-// TODO: think about the best way to expose this capability to the processors.
-//   - Would it be better to make a generic function and the processor passes in options or something
-//
-// that identify the metrics and/or its attributes?
-type HoneycombUsageRecorder interface {
-	RecordTracesUsage(ptrace.Traces)
-	RecordMetricsUsage(pmetric.Metrics)
-	RecordLogsUsage(plog.Logs)
-}
+	// JSON marshaler is used to encode the metrics payload that is sent to opamp.
+	marshaller = pmetric.JSONMarshaler{}
+
+	// Proto marshalers are used to calculate the size of the signal requests that are recorded.
+	tracesMarshaler  = ptrace.ProtoMarshaler{}
+	metricsMarshaler = pmetric.ProtoMarshaler{}
+	logsMarshaler    = plog.ProtoMarshaler{}
+)
 
 type signal string
 
@@ -63,7 +61,7 @@ type honeycombExtension struct {
 }
 
 var _ extension.Extension = (*honeycombExtension)(nil)
-var _ HoneycombUsageRecorder = (*honeycombExtension)(nil)
+var _ usageprocessor.HoneycombUsageRecorder = (*honeycombExtension)(nil)
 
 func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Extension, error) {
 	return &honeycombExtension{
@@ -80,15 +78,15 @@ func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Exten
 
 // Start begins the extension's processing.
 func (h *honeycombExtension) Start(_ context.Context, host component.Host) error {
-	if h.config.opampExtensionID != unset {
-		ext, ok := host.GetExtensions()[h.config.opampExtensionID]
+	if h.config.OpAMPExtensionID != unset {
+		ext, ok := host.GetExtensions()[h.config.OpAMPExtensionID]
 		if !ok {
-			return fmt.Errorf("extension %q does not exist", h.config.opampExtensionID.String())
+			return fmt.Errorf("extension %q does not exist", h.config.OpAMPExtensionID.String())
 		}
 
 		registry, ok := ext.(opampcustommessages.CustomCapabilityRegistry)
 		if !ok {
-			return fmt.Errorf("extension %q is not a custom message registry", h.config.opampExtensionID.String())
+			return fmt.Errorf("extension %q is not a custom message registry", h.config.OpAMPExtensionID.String())
 		}
 
 		handler, err := registry.Register("io.honeycomb.capabilities.sendAgentTelemetry")
@@ -112,8 +110,7 @@ func (h *honeycombExtension) Shutdown(context.Context) error {
 }
 
 func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
-	m := ptrace.ProtoMarshaler{}
-	size := m.TracesSize(td)
+	size := tracesMarshaler.TracesSize(td)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], int64(size))
@@ -121,8 +118,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 }
 
 func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
-	m := pmetric.ProtoMarshaler{}
-	size := m.MetricsSize(md)
+	size := metricsMarshaler.MetricsSize(md)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], int64(size))
@@ -130,8 +126,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 }
 
 func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
-	m := plog.ProtoMarshaler{}
-	size := m.LogsSize(ld)
+	size := logsMarshaler.LogsSize(ld)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], int64(size))
