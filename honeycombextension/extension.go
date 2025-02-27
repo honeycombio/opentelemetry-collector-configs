@@ -19,8 +19,15 @@ import (
 )
 
 var (
-	unset      component.ID
+	unset component.ID
+
+	// JSON marshaler is used to encode the metrics payload that is sent to opamp.
 	marshaller = pmetric.JSONMarshaler{}
+
+	// Proto marshalers are used to calculate the size of the signal requests that are recorded.
+	tracesMarshaler  = ptrace.ProtoMarshaler{}
+	metricsMarshaler = pmetric.ProtoMarshaler{}
+	logsMarshaler    = plog.ProtoMarshaler{}
 )
 
 type signal string
@@ -103,8 +110,7 @@ func (h *honeycombExtension) Shutdown(context.Context) error {
 }
 
 func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
-	m := ptrace.ProtoMarshaler{}
-	size := m.TracesSize(td)
+	size := tracesMarshaler.TracesSize(td)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], int64(size))
@@ -112,8 +118,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 }
 
 func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
-	m := pmetric.ProtoMarshaler{}
-	size := m.MetricsSize(md)
+	size := metricsMarshaler.MetricsSize(md)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], int64(size))
@@ -121,8 +126,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 }
 
 func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
-	m := plog.ProtoMarshaler{}
-	size := m.LogsSize(ld)
+	size := logsMarshaler.LogsSize(ld)
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], int64(size))
