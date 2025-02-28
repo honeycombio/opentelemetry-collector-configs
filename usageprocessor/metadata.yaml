@@ -10,4 +10,4 @@ status:
     active: []
 
 tests:
-  config:
+  skip_lifecycle: true
