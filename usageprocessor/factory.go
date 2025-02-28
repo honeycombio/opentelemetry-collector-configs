@@ -22,7 +22,9 @@ func NewFactory() processor.Factory {
 }
 
 func createDefaultConfig() component.Config {
-	return &Config{}
+	return &Config{
+		HoneycombExtensionID: component.NewID(component.MustNewType("honeycomb")),
+	}
 }
 
 func createTracesProcessor(
