@@ -1,6 +1,11 @@
+/.circleci/config-processed.yml
 /artifacts/*
+/bin/goreleaser*
+/bin/ko*
+/bin/ocb*
 /build/*
 /test/tmp-*
+/cmd/otelcol_hny
 /dist/*
 
 # GoLand IDEA

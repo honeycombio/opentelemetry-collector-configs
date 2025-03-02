@@ -1,50 +1,96 @@
 version: 2.1
-jobs:
-  build:
-    working_directory: ~/repo
+
+executors:
+  go-executor:
     docker:
       - image: cimg/go:1.21
+
+commands:
+  setup_build_tools:
+    description: "Ensure the build tools are installed"
+    steps:
+      - run:
+          name: Ensure the right yq is installed
+          command: |
+            if ! bin/yq --version; then
+              sudo apt-get update -qq
+              sudo apt-get install -y python3-pip
+              pip install yq
+            fi
+            bin/yq --version
+      - run:
+          name: Install build tools
+          command: make tools_exist
+
+  setup_remote_and_local_docker:
+    description: "Setup Docker and fiddle permissions when running local CI"
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Maybe fiddle local Docker permissions
+          command: |
+            ls -ls /var/run/docker*.sock
+            if [[ ${CIRCLE_SHELL_ENV} =~ "localbuild" ]]; then
+              sudo chgrp circleci /var/run/docker*.sock
+            fi
+            ls -ls /var/run/docker*.sock
+
+jobs:
+  build:
+    executor: go-executor
+    steps:
+      - checkout
+      - setup_remote_and_local_docker
+      - setup_build_tools
+      - run:
+          name: Build for target test platform
+          command: make build
+      - run:
+          name: Test
+          command: make test
+      - run:
+          name: Cross-compile binaries and build local Docker image
+          command: make all
+      - save_cache:
+          key: go_build_cache-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - /home/circleci/.cache/go-build
+      - store_artifacts:
+          path: dist
+  publish_image:
+    executor: go-executor
     steps:
       - checkout
       - restore_cache:
           keys:
-            - builder-config-{{ checksum "builder-config.yaml" }}
+            - go_build_cache-{{ .Environment.CIRCLE_SHA1 }}
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
       - run:
-          name: install dependencies
-          environment:
-            OTC_BUILDER_VERSION: 0.98.0
-            PYTHON_VERSION: 3.9
+          name: Publish Docker images
           command: |
-            sudo apt-get update -qq
-            sudo apt-get install -y python2  libbz2-dev  libreadline-dev libssl-dev openssl
-            curl https://pyenv.run | bash 
-            sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
-            pyenv install $PYTHON_VERSION
-            pyenv global $PYTHON_VERSION
-            pip3 install yq
-            export GOARCH=$(go env GOARCH)
-            export GOOS=$(go env GOOS)
-            mkdir -p /home/circleci/bin
-            curl -sLo /home/circleci/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
-            chmod u+x /home/circleci/bin/ocb
-            python --version
-            pip3 --version
-            ocb version
-      - run:
-          name: Run tests
-          command: |
-            export PYENV_ROOT=/home/circleci/.pyenv
-            export PATH=/home/circleci/.pyenv/shims:/home/circleci/.pyenv/bin:/home/circleci/.poetry/bin:$PATH
-            make test
-      - run:
-          name: Create artifacts
-          command: |
-            mkdir -p /tmp/images;
-            cp build/otelcol_hny_$(go env GOOS)_$(go env GOARCH) /tmp/images;
-      - save_cache:
-          key: builder-config-{{ checksum "builder-config.yaml" }}
-          paths: build
-      - store_artifacts:
-          path: /tmp/images
+            make release
+
+filters_always: &filters_always
+  filters:
+    tags:
+      only: /.*/
+
+filters_publish: &filters_publish
+  filters:
+    tags:
+      only: /^v[0-9].*/
+    branches:
+      ignore: /.*/
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          <<: *filters_always
+      - publish_image:
+          <<: *filters_publish
+          requires:
+            - build

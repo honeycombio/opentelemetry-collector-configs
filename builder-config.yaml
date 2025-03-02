@@ -1,5 +1,5 @@
 dist:
-  module: github.com/honeycombio/opentelemetry-collector-configs
+  module: github.com/honeycombio/otelcol_hny
   description: "OpenTelemetry Collector for Honeycomb"
   otelcol_version: "0.98.0"
   output_path: build
