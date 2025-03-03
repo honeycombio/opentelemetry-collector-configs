@@ -12,6 +12,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/extension"
+	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
@@ -41,19 +42,24 @@ const (
 	logs    = signal("logs")
 )
 
-func newBytesReceivedMap() map[signal][]int64 {
-	return map[signal][]int64{
-		traces:  make([]int64, 0),
-		metrics: make([]int64, 0),
-		logs:    make([]int64, 0),
+func newBytesReceivedMap() map[signal][]datapoint {
+	return map[signal][]datapoint{
+		traces:  make([]datapoint, 0),
+		metrics: make([]datapoint, 0),
+		logs:    make([]datapoint, 0),
 	}
+}
+
+type datapoint struct {
+	timestamp time.Time
+	value     int64
 }
 
 type honeycombExtension struct {
 	config *Config
 	set    extension.Settings
 
-	bytesReceivedData map[signal][]int64
+	bytesReceivedData map[signal][]datapoint
 	bytesReceivedMux  sync.Mutex
 	done              chan struct{}
 
@@ -113,7 +119,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 	size := tracesMarshaler.TracesSize(td)
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], int64(size))
+	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], datapoint{timestamp: time.Now(), value: int64(size)})
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -121,7 +127,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 	size := metricsMarshaler.MetricsSize(md)
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], int64(size))
+	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], datapoint{timestamp: time.Now(), value: int64(size)})
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -129,7 +135,7 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	size := logsMarshaler.LogsSize(ld)
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], int64(size))
+	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], datapoint{timestamp: time.Now(), value: int64(size)})
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -183,8 +189,9 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 		// TODO: Should we do some summing here so our payload is smaller and so papi has to do less?
 		for _, v := range dps {
 			dp := sum.DataPoints().AppendEmpty()
+			dp.SetTimestamp(pcommon.NewTimestampFromTime(v.timestamp))
 			dp.Attributes().PutStr("signal", string(s))
-			dp.SetIntValue(v)
+			dp.SetIntValue(v.value)
 		}
 	}
 
