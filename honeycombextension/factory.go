@@ -20,7 +20,9 @@ func NewFactory() extension.Factory {
 }
 
 func createDefaultConfig() component.Config {
-	return &Config{}
+	return &Config{
+		OpAMPExtensionID: component.NewID(component.MustNewType("opamp")),
+	}
 }
 
 func createExtension(_ context.Context, set extension.Settings, cfg component.Config) (extension.Extension, error) {
