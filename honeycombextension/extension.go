@@ -20,7 +20,8 @@ import (
 )
 
 var (
-	unset component.ID
+	unset             component.ID
+	errEmptyUsageData = errors.New("no usage data to report")
 
 	// JSON marshaler is used to encode the metrics payload that is sent to opamp.
 	marshaller = pmetric.JSONMarshaler{}
@@ -117,6 +118,9 @@ func (h *honeycombExtension) Shutdown(context.Context) error {
 
 func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 	size := tracesMarshaler.TracesSize(td)
+	if size == 0 {
+		return
+	}
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -125,6 +129,9 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 
 func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 	size := metricsMarshaler.MetricsSize(md)
+	if size == 0 {
+		return
+	}
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -133,6 +140,9 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 
 func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	size := logsMarshaler.LogsSize(ld)
+	if size == 0 {
+		return
+	}
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -150,6 +160,10 @@ func (h *honeycombExtension) reportUsage() {
 		case <-t.C:
 			data, err := h.createUsageReport()
 			if err != nil {
+				if errors.Is(err, errEmptyUsageData) {
+					h.set.Logger.Debug("no usage data to report")
+					continue
+				}
 				h.set.Logger.Error("failed to generate payload", zap.Error(err))
 				continue
 			}
@@ -175,6 +189,10 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	h.bytesReceivedData = newBytesReceivedMap()
 	h.bytesReceivedMux.Unlock()
 
+	if len(usage) == 0 {
+		return nil, errEmptyUsageData
+	}
+
 	// create the metrics payload
 	m := pmetric.NewMetrics()
 	rm := m.ResourceMetrics().AppendEmpty()
@@ -192,6 +210,7 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 			dp.SetTimestamp(pcommon.NewTimestampFromTime(v.timestamp))
 			dp.Attributes().PutStr("signal", string(s))
 			dp.SetIntValue(v.value)
+			h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v.value))
 		}
 	}
 
