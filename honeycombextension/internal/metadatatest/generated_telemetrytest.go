@@ -85,6 +85,22 @@ func AssertEqualHoneycombExtensionUsageReportFailure(t *testing.T, tt *component
 	metricdatatest.AssertEqual(t, want, got, opts...)
 }
 
+func AssertEqualHoneycombExtensionUsageReportPending(t *testing.T, tt *componenttest.Telemetry, dps []metricdata.DataPoint[int64], opts ...metricdatatest.Option) {
+	want := metricdata.Metrics{
+		Name:        "otelcol_honeycomb_extension_usage_report_pending",
+		Description: "Total usage report pending",
+		Unit:        "{records}",
+		Data: metricdata.Sum[int64]{
+			Temporality: metricdata.CumulativeTemporality,
+			IsMonotonic: true,
+			DataPoints:  dps,
+		},
+	}
+	got, err := tt.GetMetric("otelcol_honeycomb_extension_usage_report_pending")
+	require.NoError(t, err)
+	metricdatatest.AssertEqual(t, want, got, opts...)
+}
+
 func AssertEqualHoneycombExtensionUsageReportSuccess(t *testing.T, tt *componenttest.Telemetry, dps []metricdata.DataPoint[int64], opts ...metricdatatest.Option) {
 	want := metricdata.Metrics{
 		Name:        "otelcol_honeycomb_extension_usage_report_success",

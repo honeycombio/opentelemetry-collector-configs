@@ -31,6 +31,7 @@ type TelemetryBuilder struct {
 	HoneycombExtensionBytesReceivedMetrics metric.Int64Counter
 	HoneycombExtensionBytesReceivedTraces  metric.Int64Counter
 	HoneycombExtensionUsageReportFailure   metric.Int64Counter
+	HoneycombExtensionUsageReportPending   metric.Int64Counter
 	HoneycombExtensionUsageReportSuccess   metric.Int64Counter
 }
 
@@ -84,6 +85,12 @@ func NewTelemetryBuilder(settings component.TelemetrySettings, options ...Teleme
 	builder.HoneycombExtensionUsageReportFailure, err = builder.meter.Int64Counter(
 		"otelcol_honeycomb_extension_usage_report_failure",
 		metric.WithDescription("Total usage report failure"),
+		metric.WithUnit("{records}"),
+	)
+	errs = errors.Join(errs, err)
+	builder.HoneycombExtensionUsageReportPending, err = builder.meter.Int64Counter(
+		"otelcol_honeycomb_extension_usage_report_pending",
+		metric.WithDescription("Total usage report pending"),
 		metric.WithUnit("{records}"),
 	)
 	errs = errors.Join(errs, err)

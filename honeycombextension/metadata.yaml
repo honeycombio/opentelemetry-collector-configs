@@ -50,3 +50,10 @@ telemetry:
       sum:
         value_type: int
         monotonic: true
+    honeycomb_extension_usage_report_pending:
+      description: Total usage report pending
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true

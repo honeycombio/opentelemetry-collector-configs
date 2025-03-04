@@ -24,6 +24,7 @@ func TestSetupTelemetry(t *testing.T) {
 	tb.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), 1)
 	tb.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), 1)
 	tb.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
+	tb.HoneycombExtensionUsageReportPending.Add(context.Background(), 1)
 	tb.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
 	AssertEqualHoneycombExtensionBytesReceivedLogs(t, testTel,
 		[]metricdata.DataPoint[int64]{{Value: 1}},
@@ -35,6 +36,9 @@ func TestSetupTelemetry(t *testing.T) {
 		[]metricdata.DataPoint[int64]{{Value: 1}},
 		metricdatatest.IgnoreTimestamp())
 	AssertEqualHoneycombExtensionUsageReportFailure(t, testTel,
+		[]metricdata.DataPoint[int64]{{Value: 1}},
+		metricdatatest.IgnoreTimestamp())
+	AssertEqualHoneycombExtensionUsageReportPending(t, testTel,
 		[]metricdata.DataPoint[int64]{{Value: 1}},
 		metricdatatest.IgnoreTimestamp())
 	AssertEqualHoneycombExtensionUsageReportSuccess(t, testTel,

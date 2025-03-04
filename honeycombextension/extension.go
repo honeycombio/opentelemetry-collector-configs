@@ -16,8 +16,6 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/honeycombextension/internal/metadata"
@@ -131,8 +129,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 		return
 	}
 
-	attrs := attribute.String("signal", string(traces))
-	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -145,8 +142,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 		return
 	}
 
-	attrs := attribute.String("signal", string(metrics))
-	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -159,8 +155,7 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 		return
 	}
 
-	attrs := attribute.String("signal", string(logs))
-	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -192,7 +187,7 @@ func (h *honeycombExtension) reportUsage() {
 				// Count successful report sent
 				h.telemetryBuilder.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
 			case errors.Is(err, types.ErrCustomMessagePending):
-				h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
+				h.telemetryBuilder.HoneycombExtensionUsageReportPending.Add(context.Background(), 1)
 				<-sendingChan
 				continue
 			default:

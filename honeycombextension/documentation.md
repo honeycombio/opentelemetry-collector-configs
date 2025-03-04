@@ -38,6 +38,14 @@ Total usage report failure
 | ---- | ----------- | ---------- | --------- |
 | {records} | Sum | Int | true |
 
+### otelcol_honeycomb_extension_usage_report_pending
+
+Total usage report pending
+
+| Unit | Metric Type | Value Type | Monotonic |
+| ---- | ----------- | ---------- | --------- |
+| {records} | Sum | Int | true |
+
 ### otelcol_honeycomb_extension_usage_report_success
 
 Total usage report success
