@@ -49,4 +49,3 @@ telemetry:
       sum:
         value_type: int
         monotonic: true
->>>>>>> 2fe51d4 (use telemetrybuilder)
