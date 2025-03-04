@@ -43,12 +43,10 @@ const (
 	logs    = signal("logs")
 )
 
-func newBytesReceivedMap() map[signal][]datapoint {
-	return map[signal][]datapoint{
-		traces:  make([]datapoint, 0),
-		metrics: make([]datapoint, 0),
-		logs:    make([]datapoint, 0),
-	}
+type bytesReceivedMap map[signal][]datapoint
+
+func newBytesReceivedMap() bytesReceivedMap {
+	return make(map[signal][]datapoint, 0)
 }
 
 type datapoint struct {
@@ -60,7 +58,7 @@ type honeycombExtension struct {
 	config *Config
 	set    extension.Settings
 
-	bytesReceivedData map[signal][]datapoint
+	bytesReceivedData bytesReceivedMap
 	bytesReceivedMux  sync.Mutex
 	done              chan struct{}
 
