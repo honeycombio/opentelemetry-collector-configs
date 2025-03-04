@@ -29,7 +29,7 @@ func newUsageProcessor(settings processor.Settings, cfg *Config) (*usageProcesso
 	}, nil
 }
 
-func (p *usageProcessor) Start(ctx context.Context, host component.Host) error {
+func (p *usageProcessor) Start(_ context.Context, host component.Host) error {
 	if p.config.HoneycombExtensionID != unset {
 		ext := host.GetExtensions()[p.config.HoneycombExtensionID]
 		if ext == nil {
@@ -47,21 +47,21 @@ func (p *usageProcessor) Start(ctx context.Context, host component.Host) error {
 	return nil
 }
 
-func (p *usageProcessor) processTraces(ctx context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
+func (p *usageProcessor) processTraces(_ context.Context, tracesData ptrace.Traces) (ptrace.Traces, error) {
 	if p.recorder != nil {
 		p.recorder.RecordTracesUsage(tracesData)
 	}
 	return tracesData, nil
 }
 
-func (p *usageProcessor) processMetrics(ctx context.Context, metricsData pmetric.Metrics) (pmetric.Metrics, error) {
+func (p *usageProcessor) processMetrics(_ context.Context, metricsData pmetric.Metrics) (pmetric.Metrics, error) {
 	if p.recorder != nil {
 		p.recorder.RecordMetricsUsage(metricsData)
 	}
 	return metricsData, nil
 }
 
-func (p *usageProcessor) processLogs(ctx context.Context, logsData plog.Logs) (plog.Logs, error) {
+func (p *usageProcessor) processLogs(_ context.Context, logsData plog.Logs) (plog.Logs, error) {
 	if p.recorder != nil {
 		p.recorder.RecordLogsUsage(logsData)
 	}

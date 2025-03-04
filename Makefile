@@ -28,6 +28,11 @@ release:
 .PHONY: test
 test: integration_test
 
+.PHONY: go_test
+go_test:
+	find . -name "go.mod" -not -path "./dynamicsamplingprocessor/*" -execdir go test ./... \;
+
+
 .PHONY: integration_test
 integration_test: test/test.sh build/otelcol_hny_$(GOOS)_$(GOARCH) artifacts/honeycomb-metrics-config.yaml
 	./test/test.sh

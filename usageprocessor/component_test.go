@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/honeycombio/opentelemetry-collector-configs/usageprocessor/internal/metadata"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/confmap/confmaptest"
@@ -84,7 +85,7 @@ func TestComponentLifecycleCustomHost(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name+"-lifecycle", func(t *testing.T) {
-			c, err := tt.createFn(context.Background(), processortest.NewNopSettings(), cfg)
+			c, err := tt.createFn(context.Background(), processortest.NewNopSettings(metadata.Type), cfg)
 			require.NoError(t, err)
 			host := &nopHost{}
 			err = c.Start(context.Background(), host)
