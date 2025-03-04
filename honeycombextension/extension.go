@@ -161,7 +161,7 @@ func (h *honeycombExtension) reportUsage() {
 			data, err := h.createUsageReport()
 			if err != nil {
 				if errors.Is(err, errEmptyUsageData) {
-					h.set.Logger.Info("no usage data to report")
+					h.set.Logger.Debug("no usage data to report")
 					continue
 				}
 				h.set.Logger.Error("failed to generate payload", zap.Error(err))
@@ -210,7 +210,7 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 			dp.SetTimestamp(pcommon.NewTimestampFromTime(v.timestamp))
 			dp.Attributes().PutStr("signal", string(s))
 			dp.SetIntValue(v.value)
-			h.set.Logger.Info("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v.value))
+			h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v.value))
 		}
 	}
 
