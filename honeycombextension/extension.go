@@ -46,7 +46,7 @@ const (
 type bytesReceivedMap map[signal][]datapoint
 
 func newBytesReceivedMap() bytesReceivedMap {
-	return make(map[signal][]datapoint, 0)
+	return make(map[signal][]datapoint)
 }
 
 type datapoint struct {
