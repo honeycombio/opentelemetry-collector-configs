@@ -11,3 +11,42 @@ status:
 tests:
   goleak:
     skip: true
+
+telemetry:
+  metrics:
+    honeycomb_extension_bytes_received_traces:
+      description: Total bytes received from trace singal
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+    honeycomb_extension_bytes_received_metrics:
+      description: Total bytes received from metrcis singal
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+    honeycomb_extension_bytes_received_logs:
+      description: Total bytes received from logs singal
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+    honeycomb_extension_usage_report_success:
+      description: Total usage report success
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+    honeycomb_extension_usage_report_failure:
+      description: Total usage report failure
+      unit: "{records}"
+      enabled: true
+      sum:
+        value_type: int
+        monotonic: true
+>>>>>>> 2fe51d4 (use telemetrybuilder)

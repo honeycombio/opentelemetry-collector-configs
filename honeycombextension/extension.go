@@ -20,6 +20,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
+
+	"github.com/honeycombio/opentelemetry-collector-configs/honeycombextension/internal/metadata"
 )
 
 var (
@@ -69,80 +71,28 @@ type honeycombExtension struct {
 
 	telemetryHandler opampcustommessages.CustomCapabilityHandler
 
-	// Instrumentation metrics
-	bytesReceivedCounterTraces  metric.Int64Counter
-	bytesReceivedCounterMetrics metric.Int64Counter
-	bytesReceivedCounterLogs    metric.Int64Counter
-	usageReportCounterSuccess   metric.Int64Counter
-	usageReportCounterFailure   metric.Int64Counter
+	telemetryBuilder *metadata.TelemetryBuilder
 }
 
 var _ extension.Extension = (*honeycombExtension)(nil)
 var _ usageprocessor.HoneycombUsageRecorder = (*honeycombExtension)(nil)
 
 func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Extension, error) {
-	ext := &honeycombExtension{
-		config: cfg,
-		set:    set,
+	telemetryBuilder, err := metadata.NewTelemetryBuilder(set.TelemetrySettings)
+	if err != nil {
+		return nil, err
+	}
+	return &honeycombExtension{
+		telemetryBuilder: telemetryBuilder,
+		config:           cfg,
+		set:              set,
 
 		bytesReceivedData: newBytesReceivedMap(),
 		bytesReceivedMux:  sync.Mutex{},
 		done:              make(chan struct{}),
 
 		telemetryHandler: nil,
-	}
-
-	if err := ext.initializeInternalMetrics(); err != nil {
-		return nil, err
-	}
-
-	return ext, nil
-}
-
-func (h *honeycombExtension) initializeInternalMetrics() error {
-	var err error
-	h.bytesReceivedCounterTraces, err = meter.Int64Counter(
-		"honeycomb.usage.bytes_received_traces",
-		metric.WithDescription("Total bytes received from traces signal type"),
-		metric.WithUnit("bytes"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create bytes received counter for traces: %w", err)
-	}
-
-	h.bytesReceivedCounterMetrics, err = meter.Int64Counter(
-		"honeycomb.usage.bytes_received_metrics",
-		metric.WithDescription("Total bytes received from metrics signal type"),
-		metric.WithUnit("bytes"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create bytes received counter for metrics: %w", err)
-	}
-	h.bytesReceivedCounterLogs, err = meter.Int64Counter(
-		"honeycomb.usage.bytes_received_logs",
-		metric.WithDescription("Total bytes received from logs signal type"),
-		metric.WithUnit("bytes"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create bytes received counter for logs: %w", err)
-	}
-
-	h.usageReportCounterSuccess, err = meter.Int64Counter(
-		"honeycomb.usage.reports.success",
-		metric.WithDescription("Number of usage reports successfully sent"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create usage report success counter: %w", err)
-	}
-
-	h.usageReportCounterFailure, err = meter.Int64Counter(
-		"honeycomb.usage.reports.failure",
-		metric.WithDescription("Number of usage reports failed to send"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create usage report failure counter: %w", err)
-	}
-	return nil
+	}, nil
 }
 
 // Start begins the extension's processing.
@@ -185,7 +135,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 	}
 
 	attrs := attribute.String("signal", string(traces))
-	h.bytesReceivedCounterTraces.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -199,7 +149,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 	}
 
 	attrs := attribute.String("signal", string(metrics))
-	h.bytesReceivedCounterMetrics.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -213,7 +163,7 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	}
 
 	attrs := attribute.String("signal", string(logs))
-	h.bytesReceivedCounterLogs.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size), metric.WithAttributes(attrs))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -243,13 +193,13 @@ func (h *honeycombExtension) reportUsage() {
 			switch {
 			case err == nil:
 				// Count successful report sent
-				h.usageReportCounterSuccess.Add(context.Background(), 1)
+				h.telemetryBuilder.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
 			case errors.Is(err, types.ErrCustomMessagePending):
-				h.usageReportCounterFailure.Add(context.Background(), 1)
+				h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
 				<-sendingChan
 				continue
 			default:
-				h.usageReportCounterFailure.Add(context.Background(), 1)
+				h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
 				h.set.Logger.Error("failed to send message", zap.Error(err))
 			}
 		}
