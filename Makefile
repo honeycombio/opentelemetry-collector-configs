@@ -26,7 +26,7 @@ release:
 	(cd dist && shasum -a 256 * > checksums.txt)
 
 .PHONY: test
-test: integration_test
+test: integration_test go_test
 
 .PHONY: go_test
 go_test:
