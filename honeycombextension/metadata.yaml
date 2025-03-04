@@ -9,4 +9,5 @@ status:
 
 
 tests:
-  skip_lifecycle: true
+  goleak:
+    skip: true
