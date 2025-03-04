@@ -17,6 +17,8 @@ import (
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
+
+	"github.com/honeycombio/opentelemetry-collector-configs/honeycombextension/internal/metadata"
 )
 
 var (
@@ -63,15 +65,22 @@ type honeycombExtension struct {
 	done              chan struct{}
 
 	telemetryHandler opampcustommessages.CustomCapabilityHandler
+
+	telemetryBuilder *metadata.TelemetryBuilder
 }
 
 var _ extension.Extension = (*honeycombExtension)(nil)
 var _ usageprocessor.HoneycombUsageRecorder = (*honeycombExtension)(nil)
 
 func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Extension, error) {
+	telemetryBuilder, err := metadata.NewTelemetryBuilder(set.TelemetrySettings)
+	if err != nil {
+		return nil, err
+	}
 	return &honeycombExtension{
-		config: cfg,
-		set:    set,
+		telemetryBuilder: telemetryBuilder,
+		config:           cfg,
+		set:              set,
 
 		bytesReceivedData: newBytesReceivedMap(),
 		bytesReceivedMux:  sync.Mutex{},
@@ -120,6 +129,8 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 		return
 	}
 
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size))
+
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], datapoint{timestamp: time.Now(), value: int64(size)})
 	h.bytesReceivedMux.Unlock()
@@ -131,6 +142,8 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 		return
 	}
 
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size))
+
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], datapoint{timestamp: time.Now(), value: int64(size)})
 	h.bytesReceivedMux.Unlock()
@@ -141,6 +154,8 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	if size == 0 {
 		return
 	}
+
+	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
 	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], datapoint{timestamp: time.Now(), value: int64(size)})
@@ -169,11 +184,14 @@ func (h *honeycombExtension) reportUsage() {
 			sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, data)
 			switch {
 			case err == nil:
-				break
+				// Count successful report sent
+				h.telemetryBuilder.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
 			case errors.Is(err, types.ErrCustomMessagePending):
+				h.telemetryBuilder.HoneycombExtensionUsageReportPending.Add(context.Background(), 1)
 				<-sendingChan
 				continue
 			default:
+				h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
 				h.set.Logger.Error("failed to send message", zap.Error(err))
 			}
 		}
