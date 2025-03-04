@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 	"go.opentelemetry.io/collector/pdata/ptrace"
-	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
@@ -35,8 +34,6 @@ var (
 	tracesMarshaler  = ptrace.ProtoMarshaler{}
 	metricsMarshaler = pmetric.ProtoMarshaler{}
 	logsMarshaler    = plog.ProtoMarshaler{}
-
-	meter = otel.GetMeterProvider().Meter("honeycombextension")
 )
 
 type signal string
