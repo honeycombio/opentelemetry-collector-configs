@@ -1,10 +1,14 @@
 package honeycombextension
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/honeycombio/opentelemetry-collector-configs/honeycombextension/internal/metadata"
+	"github.com/open-telemetry/opamp-go/client/types"
+	"github.com/open-telemetry/opamp-go/protobufs"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampcustommessages"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/collector/extension/extensiontest"
@@ -157,3 +161,68 @@ func Test_createUsageReport(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(expectedBytes), len(bytes))
 }
+
+func Test_sendUsageReport(t *testing.T) {
+	testData := []byte("test usage data")
+
+	setupExtWithMockHandler := func(handleFunc func(msgType string, data []byte) (chan struct{}, error)) *honeycombExtension {
+		ext, err := newHoneycombExtension(nil, extensiontest.NewNopSettings(metadata.Type))
+		require.NoError(t, err)
+		hnyExt, ok := ext.(*honeycombExtension)
+		require.True(t, ok)
+
+		hnyExt.telemetryHandler = &mockHandler{handleFunc: handleFunc}
+
+		return hnyExt
+	}
+
+	t.Run("successful send", func(t *testing.T) {
+		hnyExt := setupExtWithMockHandler(func(msgType string, data []byte) (chan struct{}, error) {
+			assert.Equal(t, reportUsageMessageType, msgType)
+			assert.Equal(t, testData, data)
+			return nil, nil
+		})
+
+		shouldRetry := hnyExt.sendUsageReport(testData)
+		assert.False(t, shouldRetry, "should not retry on success")
+	})
+
+	t.Run("pending message", func(t *testing.T) {
+		// Create a channel that we'll close immediately to simulate fast completion
+		doneChan := make(chan struct{})
+		close(doneChan)
+
+		hnyExt := setupExtWithMockHandler(func(msgType string, data []byte) (chan struct{}, error) {
+			return doneChan, types.ErrCustomMessagePending
+		})
+
+		result := hnyExt.sendUsageReport(testData)
+		assert.True(t, result, "should retry if the last pending message completes")
+	})
+
+	t.Run("error sending message", func(t *testing.T) {
+		testErr := errors.New("test error")
+		hnyExt := setupExtWithMockHandler(func(msgType string, data []byte) (chan struct{}, error) {
+			return nil, testErr
+		})
+
+		result := hnyExt.sendUsageReport(testData)
+		assert.False(t, result, "should not retry if there is an unrecoverable error")
+	})
+}
+
+var _ opampcustommessages.CustomCapabilityHandler = (*mockHandler)(nil)
+
+type mockHandler struct {
+	handleFunc func(msgType string, data []byte) (chan struct{}, error)
+}
+
+func (m *mockHandler) Message() <-chan *protobufs.CustomMessage {
+	return nil
+}
+
+func (m *mockHandler) SendMessage(msgType string, data []byte) (chan struct{}, error) {
+	return m.handleFunc(msgType, data)
+}
+
+func (m *mockHandler) Unregister() {}
