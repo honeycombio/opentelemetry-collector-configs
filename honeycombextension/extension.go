@@ -209,7 +209,10 @@ func (h *honeycombExtension) reportUsage() {
 			if shouldRetry {
 				h.set.Logger.Debug("Pending message completed, retrying once")
 
-				h.sendUsageReport(data)
+				failedRetry := h.sendUsageReport(data)
+				if failedRetry {
+					h.set.Logger.Error("Failed to send usage report after retry")
+				}
 			}
 		}
 	}
