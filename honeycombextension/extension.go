@@ -211,6 +211,7 @@ func (h *honeycombExtension) reportUsage() {
 
 				failedRetry := h.sendUsageReport(data)
 				if failedRetry {
+					h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
 					h.set.Logger.Error("Failed to send usage report after retry")
 				}
 			}
