@@ -162,6 +162,29 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	h.bytesReceivedMux.Unlock()
 }
 
+func (h *honeycombExtension) sendUsageReport(data []byte) (retry bool) {
+	sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, data)
+
+	switch {
+	case err == nil:
+		h.telemetryBuilder.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
+		h.set.Logger.Debug("Successfully sent usage report")
+		return false
+
+	case errors.Is(err, types.ErrCustomMessagePending):
+		h.telemetryBuilder.HoneycombExtensionUsageReportPending.Add(context.Background(), 1)
+		h.set.Logger.Debug("Message pending, waiting for completion")
+
+		<-sendingChan
+		return true
+
+	default:
+		h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
+		h.set.Logger.Error("Failed to send message", zap.Error(err))
+		return false
+	}
+}
+
 func (h *honeycombExtension) reportUsage() {
 	t := time.NewTicker(time.Second * 30)
 	defer t.Stop()
@@ -181,23 +204,20 @@ func (h *honeycombExtension) reportUsage() {
 				continue
 			}
 
-			sendingChan, err := h.telemetryHandler.SendMessage(reportUsageMessageType, data)
-			switch {
-			case err == nil:
-				// Count successful report sent
-				h.telemetryBuilder.HoneycombExtensionUsageReportSuccess.Add(context.Background(), 1)
-			case errors.Is(err, types.ErrCustomMessagePending):
-				h.telemetryBuilder.HoneycombExtensionUsageReportPending.Add(context.Background(), 1)
-				<-sendingChan
-				continue
-			default:
-				h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
-				h.set.Logger.Error("failed to send message", zap.Error(err))
+			shouldRetry := h.sendUsageReport(data)
+			// If the message was pending, wait for it to complete and retry once
+			if shouldRetry {
+				h.set.Logger.Debug("Pending message completed, retrying once")
+
+				failedRetry := h.sendUsageReport(data)
+				if failedRetry {
+					h.telemetryBuilder.HoneycombExtensionUsageReportFailure.Add(context.Background(), 1)
+					h.set.Logger.Error("Failed to send usage report after retry")
+				}
 			}
 		}
 	}
 }
-
 func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	// get a copy of the data and clear the map
 	h.bytesReceivedMux.Lock()
