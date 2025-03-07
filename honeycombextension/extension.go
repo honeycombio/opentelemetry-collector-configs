@@ -45,10 +45,10 @@ const (
 	logs    = signal("logs")
 )
 
-type bytesReceivedMap map[signal][]int64
+type bytesReceivedMap map[signal]int64
 
 func newBytesReceivedMap() bytesReceivedMap {
-	return make(map[signal][]int64)
+	return make(map[signal]int64)
 }
 
 type honeycombExtension struct {
@@ -127,7 +127,7 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[traces] = append(h.bytesReceivedData[traces], int64(size))
+	h.bytesReceivedData[traces] = h.bytesReceivedData[traces] + int64(size)
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -140,7 +140,7 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[metrics] = append(h.bytesReceivedData[metrics], int64(size))
+	h.bytesReceivedData[metrics] = h.bytesReceivedData[metrics] + int64(size)
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -153,7 +153,7 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[logs] = append(h.bytesReceivedData[logs], int64(size))
+	h.bytesReceivedData[logs] = h.bytesReceivedData[logs] + int64(size)
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -234,16 +234,12 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	sum := metric.SetEmptySum()
 	sum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 
-	for s, dps := range usage {
-		var total int64
-		for _, v := range dps {
-			total += v
-		}
+	for s, v := range usage {
 		dp := sum.DataPoints().AppendEmpty()
 		dp.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
 		dp.Attributes().PutStr("signal", string(s))
-		dp.SetIntValue(total)
-		h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", total))
+		dp.SetIntValue(v)
+		h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v))
 	}
 
 	// marshal the metrics into a byte slice
