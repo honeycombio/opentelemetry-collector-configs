@@ -86,10 +86,6 @@ jobs:
               -t honeycombio/supervised-collector:$CIRCLE_SHA1 \
               -t honeycombio/supervised-collector:latest \
               .
-      - docker/update-description:
-          docker-username: DOCKER_USERNAME
-          docker-password: DOCKER_PASSWORD
-          image: honeycombio/supervised-collector
 
 workflows:
   version: 2
