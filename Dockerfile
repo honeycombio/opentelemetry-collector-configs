@@ -16,6 +16,6 @@ ARG USER_GID=10001
 USER ${USER_UID}:${USER_GID}
 
 COPY --from=opampsupervisor --chmod=755 /usr/local/bin/opampsupervisor /opampsupervisor
-COPY --from=otelcontribcol --chmod=755 /go/src/supervised-collector /otelcol-contrib
+COPY --from=otelcontribcol --chmod=755 /go/src/supervised-collector/supervised-collector /otelcol-contrib
 WORKDIR /var/lib/otelcol/supervisor
 ENTRYPOINT ["/opampsupervisor"]
