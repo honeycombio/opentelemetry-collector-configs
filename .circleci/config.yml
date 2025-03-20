@@ -1,4 +1,14 @@
 version: 2.1
+
+orbs:
+  docker: circleci/docker@2.8.2
+
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/base:current
+        user: root
+
 jobs:
   build:
     working_directory: ~/repo
@@ -48,3 +58,51 @@ jobs:
           paths: build
       - store_artifacts:
           path: /tmp/images
+
+  build-and-push-multiarch:
+    executor: docker-executor
+    resource_class: xlarge
+    steps:
+      - checkout
+      - setup_remote_docker:
+          privileged: true  # Required for Buildx
+      - run:
+          no_output_timeout: 30m
+          name: Set up Docker Buildx
+          command: |
+            docker buildx create --use --name multiarch_builder
+            docker buildx inspect --bootstrap  # Ensures everything is set up correctly
+      - run:
+          name: Login to Docker Hub
+          command: echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+      - run:
+          name: Build and Push Multi-Arch Docker Image
+          command: |
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --sbom=true \
+              --provenance=true \
+              --push \
+              -t honeycombio/supervised-collector:$CIRCLE_SHA1 \
+              -t honeycombio/supervised-collector:$CIRCLE_TAG \
+              -t honeycombio/supervised-collector:latest \
+              .
+      - docker/update-description:
+          docker-username: DOCKER_USERNAME
+          docker-password: DOCKER_PASSWORD
+          image: honeycombio/supervised-collector
+
+workflows:
+  version: 2
+  build-and-push-workflow:
+    jobs:
+      - build-and-push-multiarch:
+          context: Honeycomb Secrets for Public Repos
+          filters:
+            branches:
+              only: /supervised-collector/
+      - build:
+          context: Honeycomb Secrets for Public Repos
+          filters:
+            branches:
+              ignore: /supervised-collector/
