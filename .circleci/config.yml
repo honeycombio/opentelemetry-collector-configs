@@ -84,7 +84,6 @@ jobs:
               --provenance=true \
               --push \
               -t honeycombio/supervised-collector:$CIRCLE_SHA1 \
-              -t honeycombio/supervised-collector:$CIRCLE_TAG \
               -t honeycombio/supervised-collector:latest \
               .
       - docker/update-description:
