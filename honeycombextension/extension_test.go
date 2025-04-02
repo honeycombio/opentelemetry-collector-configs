@@ -26,7 +26,8 @@ func TestRecordTracesUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordTracesUsage(ptrace.NewTraces())
-	assert.Len(t, hnyExt.bytesReceivedData, 0)
+	require.Equal(t, hnyExt.usage[traces].bytes, int64(0))
+	require.Equal(t, hnyExt.usage[traces].count, int64(0))
 
 	td := ptrace.NewTraces()
 	rs := td.ResourceSpans().AppendEmpty()
@@ -37,10 +38,8 @@ func TestRecordTracesUsage(t *testing.T) {
 
 	// test measure a size
 	hnyExt.RecordTracesUsage(td)
-	require.Equal(t, hnyExt.bytesReceivedData[traces], int64(38))
-	assert.Equal(t, hnyExt.bytesReceivedData[metrics], int64(0))
-	assert.Equal(t, hnyExt.bytesReceivedData[logs], int64(0))
-	assert.Equal(t, int64(tracesMarshaler.TracesSize(td)), hnyExt.bytesReceivedData[traces])
+	require.Equal(t, int64(tracesMarshaler.TracesSize(td)), hnyExt.usage[traces].bytes)
+	require.Equal(t, hnyExt.usage[traces].count, int64(1))
 }
 
 func TestRecordMetricsUsage(t *testing.T) {
@@ -51,7 +50,8 @@ func TestRecordMetricsUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordMetricsUsage(pmetric.NewMetrics())
-	assert.Len(t, hnyExt.bytesReceivedData, 0)
+	require.Equal(t, hnyExt.usage[metrics].bytes, int64(0))
+	require.Equal(t, hnyExt.usage[metrics].count, int64(0))
 
 	md := pmetric.NewMetrics()
 	rm := md.ResourceMetrics().AppendEmpty()
@@ -64,10 +64,8 @@ func TestRecordMetricsUsage(t *testing.T) {
 
 	// test measure a size
 	hnyExt.RecordMetricsUsage(md)
-	require.Equal(t, hnyExt.bytesReceivedData[metrics], int64(37))
-	assert.Equal(t, hnyExt.bytesReceivedData[traces], int64(0))
-	assert.Equal(t, hnyExt.bytesReceivedData[logs], int64(0))
-	assert.Equal(t, int64(metricsMarshaler.MetricsSize(md)), hnyExt.bytesReceivedData[metrics])
+	require.Equal(t, int64(metricsMarshaler.MetricsSize(md)), hnyExt.usage[metrics].bytes)
+	require.Equal(t, hnyExt.usage[metrics].count, int64(1))
 }
 
 func TestRecordLogsUsage(t *testing.T) {
@@ -78,7 +76,8 @@ func TestRecordLogsUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordLogsUsage(plog.NewLogs())
-	assert.Len(t, hnyExt.bytesReceivedData, 0)
+	require.Equal(t, hnyExt.usage[logs].bytes, int64(0))
+	require.Equal(t, hnyExt.usage[logs].count, int64(0))
 
 	ld := plog.NewLogs()
 	rl := ld.ResourceLogs().AppendEmpty()
@@ -89,10 +88,8 @@ func TestRecordLogsUsage(t *testing.T) {
 
 	// test measure a size
 	hnyExt.RecordLogsUsage(ld)
-	require.Equal(t, hnyExt.bytesReceivedData[logs], int64(41))
-	assert.Equal(t, hnyExt.bytesReceivedData[traces], int64(0))
-	assert.Equal(t, hnyExt.bytesReceivedData[metrics], int64(0))
-	assert.Equal(t, int64(logsMarshaler.LogsSize(ld)), hnyExt.bytesReceivedData[logs])
+	require.Equal(t, int64(logsMarshaler.LogsSize(ld)), hnyExt.usage[logs].bytes)
+	require.Equal(t, hnyExt.usage[logs].count, int64(1))
 }
 
 func Test_createUsageReport(t *testing.T) {
@@ -107,17 +104,19 @@ func Test_createUsageReport(t *testing.T) {
 	assert.Empty(t, bytes)
 
 	// test payload is created correctly
-	dataMap := map[signal]int64{
-		traces:  1,
-		metrics: 2,
-		logs:    3,
+	dataMap := map[signal]*usage{
+		traces:  {bytes: 1, count: 1},
+		metrics: {bytes: 2, count: 2},
+		logs:    {bytes: 3, count: 3},
 	}
 
-	hnyExt.bytesReceivedData = dataMap
+	hnyExt.usage = dataMap
 
 	bytes, err = hnyExt.createUsageReport()
 	require.NoError(t, err)
-	assert.Empty(t, hnyExt.bytesReceivedData)
+
+	// usage is replaced with an empty map after creating the report
+	assert.True(t, hnyExt.usage.isEmpty())
 
 	expectedMetrics := pmetric.NewMetrics()
 	rm := expectedMetrics.ResourceMetrics().AppendEmpty()
@@ -130,17 +129,37 @@ func Test_createUsageReport(t *testing.T) {
 	d := m.Sum().DataPoints().AppendEmpty()
 	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
 	d.Attributes().PutStr("signal", string(traces))
-	d.SetIntValue(dataMap[traces])
+	d.SetIntValue(dataMap[traces].bytes)
 
 	d = m.Sum().DataPoints().AppendEmpty()
 	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
 	d.Attributes().PutStr("signal", string(metrics))
-	d.SetIntValue(dataMap[metrics])
+	d.SetIntValue(dataMap[metrics].bytes)
 
 	d = m.Sum().DataPoints().AppendEmpty()
 	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
 	d.Attributes().PutStr("signal", string(logs))
-	d.SetIntValue(dataMap[logs])
+	d.SetIntValue(dataMap[logs].bytes)
+
+	m = sm.Metrics().AppendEmpty()
+	m.SetName("counts_received")
+	m.SetEmptySum()
+	m.Sum().SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
+
+	d = m.Sum().DataPoints().AppendEmpty()
+	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
+	d.Attributes().PutStr("signal", string(traces))
+	d.SetIntValue(dataMap[traces].count)
+
+	d = m.Sum().DataPoints().AppendEmpty()
+	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
+	d.Attributes().PutStr("signal", string(metrics))
+	d.SetIntValue(dataMap[metrics].count)
+
+	d = m.Sum().DataPoints().AppendEmpty()
+	d.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
+	d.Attributes().PutStr("signal", string(logs))
+	d.SetIntValue(dataMap[logs].count)
 
 	expectedBytes, err := marshaller.MarshalMetrics(expectedMetrics)
 	require.NoError(t, err)
