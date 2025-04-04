@@ -26,8 +26,8 @@ func TestRecordTracesUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordTracesUsage(ptrace.NewTraces())
-	require.Equal(t, hnyExt.usage[traces].bytes, int64(0))
-	require.Equal(t, hnyExt.usage[traces].count, int64(0))
+	require.Equal(t, int64(0), hnyExt.usage[traces].bytes)
+	require.Equal(t, int64(0), hnyExt.usage[traces].count)
 
 	td := ptrace.NewTraces()
 	rs := td.ResourceSpans().AppendEmpty()
@@ -39,7 +39,7 @@ func TestRecordTracesUsage(t *testing.T) {
 	// test measure a size
 	hnyExt.RecordTracesUsage(td)
 	require.Equal(t, int64(tracesMarshaler.TracesSize(td)), hnyExt.usage[traces].bytes)
-	require.Equal(t, hnyExt.usage[traces].count, int64(1))
+	require.Equal(t, int64(td.SpanCount()), int64(1))
 }
 
 func TestRecordMetricsUsage(t *testing.T) {
@@ -50,8 +50,8 @@ func TestRecordMetricsUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordMetricsUsage(pmetric.NewMetrics())
-	require.Equal(t, hnyExt.usage[metrics].bytes, int64(0))
-	require.Equal(t, hnyExt.usage[metrics].count, int64(0))
+	require.Equal(t, int64(0), hnyExt.usage[metrics].bytes)
+	require.Equal(t, int64(0), hnyExt.usage[metrics].count)
 
 	md := pmetric.NewMetrics()
 	rm := md.ResourceMetrics().AppendEmpty()
@@ -65,7 +65,7 @@ func TestRecordMetricsUsage(t *testing.T) {
 	// test measure a size
 	hnyExt.RecordMetricsUsage(md)
 	require.Equal(t, int64(metricsMarshaler.MetricsSize(md)), hnyExt.usage[metrics].bytes)
-	require.Equal(t, hnyExt.usage[metrics].count, int64(1))
+	require.Equal(t, int64(md.MetricCount()), hnyExt.usage[metrics].count)
 }
 
 func TestRecordLogsUsage(t *testing.T) {
@@ -76,8 +76,8 @@ func TestRecordLogsUsage(t *testing.T) {
 
 	// test 0s are not recorded
 	hnyExt.RecordLogsUsage(plog.NewLogs())
-	require.Equal(t, hnyExt.usage[logs].bytes, int64(0))
-	require.Equal(t, hnyExt.usage[logs].count, int64(0))
+	require.Equal(t, int64(0), hnyExt.usage[logs].bytes)
+	require.Equal(t, int64(0), hnyExt.usage[logs].count)
 
 	ld := plog.NewLogs()
 	rl := ld.ResourceLogs().AppendEmpty()
@@ -89,7 +89,7 @@ func TestRecordLogsUsage(t *testing.T) {
 	// test measure a size
 	hnyExt.RecordLogsUsage(ld)
 	require.Equal(t, int64(logsMarshaler.LogsSize(ld)), hnyExt.usage[logs].bytes)
-	require.Equal(t, hnyExt.usage[logs].count, int64(1))
+	require.Equal(t, int64(ld.LogRecordCount()), hnyExt.usage[logs].count)
 }
 
 func Test_createUsageReport(t *testing.T) {
