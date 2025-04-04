@@ -259,7 +259,7 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	}
 
 	countsMetric := sm.Metrics().AppendEmpty()
-	countsMetric.SetName("counts_received")
+	countsMetric.SetName("count_received")
 	countsSum := countsMetric.SetEmptySum()
 	countsSum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 	for s, v := range usage {

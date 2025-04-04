@@ -142,7 +142,7 @@ func Test_createUsageReport(t *testing.T) {
 	d.SetIntValue(dataMap[logs].bytes)
 
 	m = sm.Metrics().AppendEmpty()
-	m.SetName("counts_received")
+	m.SetName("count_received")
 	m.SetEmptySum()
 	m.Sum().SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 
