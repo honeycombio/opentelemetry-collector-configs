@@ -10,7 +10,7 @@ extensions:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.122.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/pprofextension v0.122.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/extension/opampextension v0.122.0
-  - gomod: github.com/honeycombio/opentelemetry-collector-configs/honeycombextension v0.0.0-20250307200434-663c57a6f778
+  - gomod: github.com/honeycombio/opentelemetry-collector-configs/honeycombextension v0.0.0-20250410221110-cecf1a6cce31
 
 exporters:
   - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.122.1
@@ -25,7 +25,7 @@ processors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.122.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/logdedupprocessor v0.122.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/transformprocessor v0.122.0
-  - gomod: github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.0.0-20250307200434-663c57a6f778
+  - gomod: github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.0.0-20250410221110-cecf1a6cce31
 
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/nopreceiver v0.122.1
@@ -55,4 +55,4 @@ providers:
 # file before passing it to OCB, to ensure that local versions are used for all
 # Contrib modules.
 replaces:
-  - github.com/honeycombio/opentelemetry-collector-configs/usageprocessor => github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.0.0-20250307200434-663c57a6f778
+  - github.com/honeycombio/opentelemetry-collector-configs/usageprocessor => github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.0.0-20250410221110-cecf1a6cce31
