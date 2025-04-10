@@ -34,8 +34,6 @@ var (
 	logsMarshaler    = plog.ProtoMarshaler{}
 )
 
-type signal string
-
 const (
 	// reportUsageMessageType is the message type for the reportUsage custom message sent over opamp.
 	reportUsageMessageType = "reportUsage"
@@ -45,19 +43,34 @@ const (
 	logs    = signal("logs")
 )
 
-type bytesReceivedMap map[signal]int64
+type signal string
 
-func newBytesReceivedMap() bytesReceivedMap {
-	return make(map[signal]int64)
+type usageData struct {
+	bytes int64
+	count int64
+}
+
+type usageMap map[signal]*usageData
+
+func (u usageMap) isEmpty() bool {
+	return u[traces].bytes == 0 && u[metrics].bytes == 0 && u[logs].bytes == 0 && u[traces].count == 0 && u[metrics].count == 0 && u[logs].count == 0
+}
+
+func newUsageMap() usageMap {
+	return map[signal]*usageData{
+		traces:  {bytes: 0, count: 0},
+		metrics: {bytes: 0, count: 0},
+		logs:    {bytes: 0, count: 0},
+	}
 }
 
 type honeycombExtension struct {
 	config *Config
 	set    extension.Settings
 
-	bytesReceivedData bytesReceivedMap
-	bytesReceivedMux  sync.Mutex
-	done              chan struct{}
+	usage            usageMap
+	bytesReceivedMux sync.Mutex
+	done             chan struct{}
 
 	telemetryHandler opampcustommessages.CustomCapabilityHandler
 
@@ -77,9 +90,9 @@ func newHoneycombExtension(cfg *Config, set extension.Settings) (extension.Exten
 		config:           cfg,
 		set:              set,
 
-		bytesReceivedData: newBytesReceivedMap(),
-		bytesReceivedMux:  sync.Mutex{},
-		done:              make(chan struct{}),
+		usage:            newUsageMap(),
+		bytesReceivedMux: sync.Mutex{},
+		done:             make(chan struct{}),
 
 		telemetryHandler: nil,
 	}, nil
@@ -127,7 +140,8 @@ func (h *honeycombExtension) RecordTracesUsage(td ptrace.Traces) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedTraces.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[traces] = h.bytesReceivedData[traces] + int64(size)
+	h.usage[traces].bytes += int64(size)
+	h.usage[traces].count += int64(td.SpanCount())
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -140,7 +154,8 @@ func (h *honeycombExtension) RecordMetricsUsage(md pmetric.Metrics) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedMetrics.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[metrics] = h.bytesReceivedData[metrics] + int64(size)
+	h.usage[metrics].bytes += int64(size)
+	h.usage[metrics].count += int64(md.MetricCount())
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -153,7 +168,8 @@ func (h *honeycombExtension) RecordLogsUsage(ld plog.Logs) {
 	h.telemetryBuilder.HoneycombExtensionBytesReceivedLogs.Add(context.Background(), int64(size))
 
 	h.bytesReceivedMux.Lock()
-	h.bytesReceivedData[logs] = h.bytesReceivedData[logs] + int64(size)
+	h.usage[logs].bytes += int64(size)
+	h.usage[logs].count += int64(ld.LogRecordCount())
 	h.bytesReceivedMux.Unlock()
 }
 
@@ -216,30 +232,44 @@ func (h *honeycombExtension) reportUsage() {
 func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	// get a copy of the data and clear the map
 	h.bytesReceivedMux.Lock()
-	usage := h.bytesReceivedData
-	h.bytesReceivedData = newBytesReceivedMap()
+	usage := h.usage
+	h.usage = newUsageMap()
 	h.bytesReceivedMux.Unlock()
 
-	if len(usage) == 0 {
+	if usage.isEmpty() {
 		return nil, errEmptyUsageData
 	}
+
+	now := time.Now()
 
 	// create the metrics payload
 	m := pmetric.NewMetrics()
 	rm := m.ResourceMetrics().AppendEmpty()
 	// TODO: add resource attributes?
 	sm := rm.ScopeMetrics().AppendEmpty()
-	metric := sm.Metrics().AppendEmpty()
-	metric.SetName("bytes_received")
-	sum := metric.SetEmptySum()
+
+	bytesMetric := sm.Metrics().AppendEmpty()
+	bytesMetric.SetName("bytes_received")
+	sum := bytesMetric.SetEmptySum()
 	sum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
+
+	countsMetric := sm.Metrics().AppendEmpty()
+	countsMetric.SetName("count_received")
+	countsSum := countsMetric.SetEmptySum()
+	countsSum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 
 	for s, v := range usage {
 		dp := sum.DataPoints().AppendEmpty()
-		dp.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
+		dp.SetTimestamp(pcommon.NewTimestampFromTime(now))
 		dp.Attributes().PutStr("signal", string(s))
-		dp.SetIntValue(v)
-		h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v))
+		dp.SetIntValue(v.bytes)
+		h.set.Logger.Debug("Adding bytes_received datapoint", zap.String("signal", string(s)), zap.Int64("value", v.bytes))
+
+		dp = countsSum.DataPoints().AppendEmpty()
+		dp.SetTimestamp(pcommon.NewTimestampFromTime(now))
+		dp.Attributes().PutStr("signal", string(s))
+		dp.SetIntValue(v.count)
+		h.set.Logger.Debug("Adding count_received datapoint", zap.String("signal", string(s)), zap.Int64("value", v.count))
 	}
 
 	// marshal the metrics into a byte slice
