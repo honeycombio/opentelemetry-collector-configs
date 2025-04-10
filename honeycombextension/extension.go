@@ -45,19 +45,19 @@ const (
 
 type signal string
 
-type usage struct {
+type usageData struct {
 	bytes int64
 	count int64
 }
 
-type usageMap map[signal]*usage
+type usageMap map[signal]*usageData
 
 func (u usageMap) isEmpty() bool {
-	return u[traces].bytes == 0 && u[metrics].bytes == 0 && u[logs].bytes == 0
+	return u[traces].bytes == 0 && u[metrics].bytes == 0 && u[logs].bytes == 0 && u[traces].count == 0 && u[metrics].count == 0 && u[logs].count == 0
 }
 
 func newUsageMap() usageMap {
-	return map[signal]*usage{
+	return map[signal]*usageData{
 		traces:  {bytes: 0, count: 0},
 		metrics: {bytes: 0, count: 0},
 		logs:    {bytes: 0, count: 0},
@@ -240,34 +240,36 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 		return nil, errEmptyUsageData
 	}
 
+	now := time.Now()
+
 	// create the metrics payload
 	m := pmetric.NewMetrics()
 	rm := m.ResourceMetrics().AppendEmpty()
 	// TODO: add resource attributes?
 	sm := rm.ScopeMetrics().AppendEmpty()
+
 	bytesMetric := sm.Metrics().AppendEmpty()
 	bytesMetric.SetName("bytes_received")
 	sum := bytesMetric.SetEmptySum()
 	sum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
 
-	for s, v := range usage {
-		dp := sum.DataPoints().AppendEmpty()
-		dp.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
-		dp.Attributes().PutStr("signal", string(s))
-		dp.SetIntValue(v.bytes)
-		h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v.bytes))
-	}
-
 	countsMetric := sm.Metrics().AppendEmpty()
 	countsMetric.SetName("count_received")
 	countsSum := countsMetric.SetEmptySum()
 	countsSum.SetAggregationTemporality(pmetric.AggregationTemporalityDelta)
+
 	for s, v := range usage {
-		dp := countsSum.DataPoints().AppendEmpty()
-		dp.SetTimestamp(pcommon.NewTimestampFromTime(time.Now()))
+		dp := sum.DataPoints().AppendEmpty()
+		dp.SetTimestamp(pcommon.NewTimestampFromTime(now))
+		dp.Attributes().PutStr("signal", string(s))
+		dp.SetIntValue(v.bytes)
+		h.set.Logger.Debug("Adding bytes_received datapoint", zap.String("signal", string(s)), zap.Int64("value", v.bytes))
+
+		dp = countsSum.DataPoints().AppendEmpty()
+		dp.SetTimestamp(pcommon.NewTimestampFromTime(now))
 		dp.Attributes().PutStr("signal", string(s))
 		dp.SetIntValue(v.count)
-		h.set.Logger.Debug("Adding datapoint", zap.String("signal", string(s)), zap.Int64("value", v.count))
+		h.set.Logger.Debug("Adding count_received datapoint", zap.String("signal", string(s)), zap.Int64("value", v.count))
 	}
 
 	// marshal the metrics into a byte slice

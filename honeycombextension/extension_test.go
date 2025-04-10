@@ -104,7 +104,7 @@ func Test_createUsageReport(t *testing.T) {
 	assert.Empty(t, bytes)
 
 	// test payload is created correctly
-	dataMap := map[signal]*usage{
+	dataMap := map[signal]*usageData{
 		traces:  {bytes: 1, count: 1},
 		metrics: {bytes: 2, count: 2},
 		logs:    {bytes: 3, count: 3},
