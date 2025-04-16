@@ -1,6 +1,8 @@
 VERSION?=1.0.1
 GOOS=$(shell go env GOOS)
 GOARCH=$(shell go env GOARCH)
+GOPATH=$(shell go env GOPATH)
+OTC_BUILDER_VERSION=0.124.0
 
 .PHONY: all
 all: config collector-bin collector-dist
@@ -64,7 +66,8 @@ build/otelcol_hny_windows_amd64.exe:
 
 .PHONY: build-binary-internal
 build-binary-internal: builder-config.yaml
-	ocb --output-path=build --name=otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION) --version=$(VERSION) --config=builder-config.yaml
+	$(GOPATH)/bin/ocb --output-path=build --config=builder-config.yaml
+	mv build/supervised-collector build/otelcol_hny_$(GOOS)_$(GOARCH)$(EXTENSION)
 
 dist/otel-hny-collector_%_amd64.deb: build/otelcol_hny_linux_amd64
 	PACKAGE=deb ARCH=amd64 VERSION=$* $(MAKE) build-package-internal
@@ -86,3 +89,9 @@ build-package-internal:
 .PHONY: clean
 clean:
 	rm -f build/* compact-config.yaml test/tmp-* dist/* artifacts/*
+
+.PHONY: install-ocb
+install-ocb:	
+	curl -sLo $(GOPATH)/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
+	chmod u+x $(GOPATH)/bin/ocb
+	$(GOPATH)/bin/ocb version

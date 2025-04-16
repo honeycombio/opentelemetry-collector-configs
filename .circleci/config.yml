@@ -22,7 +22,6 @@ jobs:
       - run:
           name: install dependencies
           environment:
-            OTC_BUILDER_VERSION: 0.98.0
             PYTHON_VERSION: 3.9
           command: |
             sudo apt-get update -qq
@@ -34,14 +33,9 @@ jobs:
             pyenv install $PYTHON_VERSION
             pyenv global $PYTHON_VERSION
             pip3 install yq
-            export GOARCH=$(go env GOARCH)
-            export GOOS=$(go env GOOS)
-            mkdir -p /home/circleci/bin
-            curl -sLo /home/circleci/bin/ocb "https://github.com/open-telemetry/opentelemetry-collector/releases/download/cmd%2Fbuilder%2Fv${OTC_BUILDER_VERSION}/ocb_${OTC_BUILDER_VERSION}_${GOOS}_${GOARCH}"
-            chmod u+x /home/circleci/bin/ocb
             python --version
             pip3 --version
-            ocb version
+            make install-ocb
       - run:
           name: Run tests
           command: |

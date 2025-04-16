@@ -2,7 +2,7 @@ dist:
   module: github.com/honeycombio/opentelemetry-collector-configs
   name: supervised-collector
   description: Supervised Collector
-  version: 0.122.1-dev
+  version: 0.124.1-dev
   output_path: ./supervised-collector
 
 extensions:
@@ -56,3 +56,4 @@ providers:
 # Contrib modules.
 replaces:
   - github.com/honeycombio/opentelemetry-collector-configs/usageprocessor => github.com/honeycombio/opentelemetry-collector-configs/usageprocessor v0.0.0-20250410221110-cecf1a6cce31
+  - github.com/openshift/api v3.9.0+incompatible => github.com/openshift/api v0.0.0-20180801171038-322a19404e37
