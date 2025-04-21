@@ -3,7 +3,7 @@ WORKDIR /go/src
 ENV CGO_ENABLED=0
 
 ADD ./builder-config.yaml ./
-RUN go install go.opentelemetry.io/collector/cmd/builder@v0.122.1
+RUN go install go.opentelemetry.io/collector/cmd/builder@v0.124.0
 RUN builder --config builder-config.yaml
 
 # use the official upstream image for the opampsupervisor
