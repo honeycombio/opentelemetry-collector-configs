@@ -159,8 +159,8 @@ flatten(2) |
         "x-honeycomb-dataset": "$HNY_DATASET",
       }
     },
-    "logging": {
-      "loglevel": ($ENV.LOG_LEVEL // "info")
+    "debug": {
+      "verbosity": ($ENV.LOG_LEVEL // "info")
     }
   },
   "receivers": {
@@ -217,7 +217,7 @@ flatten(2) |
       "metrics": {
         "receivers": ["hostmetrics"],
         "processors": ["metricstransform", "filter", "transform", "resourcedetection", "batch"],
-        "exporters": ["logging", "otlp"]
+        "exporters": ["debug", "otlp"]
       }
     }
   }
