@@ -160,7 +160,7 @@ flatten(2) |
       }
     },
     "debug": {
-      "verbosity": ($ENV.LOG_LEVEL // "info")
+      "verbosity": ($ENV.LOG_LEVEL // "normal")
     }
   },
   "receivers": {
