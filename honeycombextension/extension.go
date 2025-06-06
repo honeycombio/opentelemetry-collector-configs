@@ -245,7 +245,6 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	// create the metrics payload
 	m := pmetric.NewMetrics()
 	rm := m.ResourceMetrics().AppendEmpty()
-	// TODO: add resource attributes?
 	sm := rm.ScopeMetrics().AppendEmpty()
 
 	bytesMetric := sm.Metrics().AppendEmpty()
@@ -273,7 +272,6 @@ func (h *honeycombExtension) createUsageReport() ([]byte, error) {
 	}
 
 	// marshal the metrics into a byte slice
-	// TODO: if this marshal fails, we'll lose all the data we grabbed at the beginning of the function. Should we deal with that?
 	data, err := marshaller.MarshalMetrics(m)
 	if err != nil {
 		h.set.Logger.Error("failed to marshal metrics", zap.Error(err))
