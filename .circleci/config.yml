@@ -13,10 +13,10 @@ jobs:
           name: install dependencies
           environment:
             OTC_BUILDER_VERSION: 0.98.0
-            PYTHON_VERSION: 3.9
+            PYTHON_VERSION: 3.13
           command: |
             sudo apt-get update -qq
-            sudo apt-get install -y python2  libbz2-dev  libreadline-dev libssl-dev openssl
+            sudo apt-get install -y python3  libbz2-dev  libreadline-dev libssl-dev openssl
             curl https://pyenv.run | bash 
             sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
             export PYENV_ROOT=/home/circleci/.pyenv
